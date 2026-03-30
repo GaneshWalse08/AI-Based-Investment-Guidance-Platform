@@ -1,7 +1,7 @@
 """
 Model Portfolio Analyzer
 Calculates weighted historical returns, values, and ESG scores for a theoretical basket of stocks.
-Upgraded: Now includes SQLite integration for saving/loading user portfolios.
+Upgraded: Includes SQLite integration for saving and loading multiple user portfolios.
 """
 import sqlite3
 import json
@@ -18,7 +18,7 @@ class PortfolioService:
         self.USD_TO_INR = 83.50
         self._init_db() # Initialize the database table when the service starts
 
-    # --- Database Methods ---
+    # ── DATABASE METHODS ────────────────────────────────────────────────────────
     def _get_db_connection(self):
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
@@ -26,44 +26,62 @@ class PortfolioService:
 
     def _init_db(self):
         with self._get_db_connection() as conn:
-            # Creates a table linking a user's ID to their portfolio JSON data
+            # Table that allows multiple portfolios per user
             conn.execute('''
-                CREATE TABLE IF NOT EXISTS portfolios (
-                    user_id TEXT PRIMARY KEY,
-                    portfolio_data TEXT NOT NULL
+                CREATE TABLE IF NOT EXISTS saved_portfolios (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    name TEXT NOT NULL,
+                    portfolio_data TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
             conn.commit()
 
-    def save_portfolio(self, user_id, portfolio_data):
+    def save_portfolio(self, user_id, name, portfolio_data):
         try:
             with self._get_db_connection() as conn:
-                # Upsert command: Inserts a new record, or updates it if the user_id already exists
                 conn.execute('''
-                    INSERT INTO portfolios (user_id, portfolio_data) 
-                    VALUES (?, ?)
-                    ON CONFLICT(user_id) DO UPDATE SET portfolio_data=excluded.portfolio_data
-                ''', (user_id, json.dumps(portfolio_data)))
+                    INSERT INTO saved_portfolios (user_id, name, portfolio_data) 
+                    VALUES (?, ?, ?)
+                ''', (user_id, name, json.dumps(portfolio_data)))
                 conn.commit()
-            return {'success': True, 'message': 'Portfolio saved securely to database!'}
+            return {'success': True, 'message': f'Portfolio "{name}" saved successfully!'}
         except Exception as e:
             return {'success': False, 'message': str(e)}
 
-    def load_portfolio(self, user_id):
-        with self._get_db_connection() as conn:
-            row = conn.execute('SELECT portfolio_data FROM portfolios WHERE user_id = ?', (user_id,)).fetchone()
-            if row:
-                return {'success': True, 'portfolio': json.loads(row['portfolio_data'])}
-            return {'success': False, 'message': 'No saved portfolio found.'}
+    def get_user_portfolios(self, user_id):
+        try:
+            with self._get_db_connection() as conn:
+                # Fetch ALL portfolios belonging to this user, newest first
+                rows = conn.execute(
+                    'SELECT id, name, portfolio_data, created_at FROM saved_portfolios WHERE user_id = ? ORDER BY created_at DESC', 
+                    (user_id,)
+                ).fetchall()
+                
+                portfolios = []
+                for r in rows:
+                    portfolios.append({
+                        'id': r['id'],
+                        'name': r['name'],
+                        'data': json.loads(r['portfolio_data']),
+                        'date': r['created_at']
+                    })
+                    
+                return {'success': True, 'portfolios': portfolios}
+        except Exception as e:
+            return {'success': False, 'message': str(e)}
 
-    # --- Analytics Methods (Unchanged) ---
+    # ── ANALYTICS METHODS ───────────────────────────────────────────────────────
     def analyze_portfolio(self, holdings):
+        # holdings is a list of dicts from the frontend: [{'ticker': 'AAPL', 'shares': 10}]
         if not holdings:
             return {"total_value_inr": 0, "expected_return": 0, "esg_score": 0, "assets": []}
 
         total_value_usd = 0
         assets = []
 
+        # First pass: Get live prices and calculate total value
         for item in holdings:
             ticker = item['ticker']
             shares = float(item['shares'])
@@ -86,6 +104,7 @@ class PortfolioService:
         if total_value_usd == 0:
             return {"total_value_inr": 0, "expected_return": 0, "esg_score": 0, "assets": []}
 
+        # Second pass: Calculate weights, expected return, and ESG
         total_expected_return = 0
         total_esg = 0
         
@@ -93,9 +112,11 @@ class PortfolioService:
             weight = asset['value_usd'] / total_value_usd
             asset['weight'] = round(weight * 100, 2)
             
+            # Get 1Y Historical Return
             mets = self._metrics.get_metrics(asset['ticker'])
             ret_1y = mets.get('return_1y', 0) if mets else 0
             
+            # Get ESG Score
             esg_data = self._esg.get_esg(asset['ticker'])
             esg_tot = esg_data.get('total', 0) if esg_data else 0
             
@@ -107,6 +128,7 @@ class PortfolioService:
             total_expected_return += (ret_1y * weight)
             total_esg += (esg_tot * weight)
 
+        # Return the fully analyzed model portfolio
         return {
             "total_value_inr": round(total_value_usd * self.USD_TO_INR, 2),
             "expected_return": round(total_expected_return, 2),

@@ -277,21 +277,23 @@ def analyze_portfolio():
 def save_user_portfolio():
     data = request.json
     user_id = data.get('user_id')
+    name = data.get('name', 'My ESG Portfolio') # Now accepts a name
     portfolio_data = data.get('portfolio', [])
     
     if not user_id:
-        return jsonify({'success': False, 'message': 'User ID is required to save a portfolio.'})
+        return jsonify({'success': False, 'message': 'User ID is required.'})
         
-    return jsonify(portfolio_svc.save_portfolio(user_id, portfolio_data))
+    return jsonify(portfolio_svc.save_portfolio(user_id, name, portfolio_data))
 
 @app.route('/api/portfolio/load', methods=['GET'])
 def load_user_portfolio():
     user_id = request.args.get('user_id')
     
     if not user_id:
-        return jsonify({'success': False, 'message': 'User ID is required to load a portfolio.'})
+        return jsonify({'success': False, 'message': 'User ID is required.'})
         
-    return jsonify(portfolio_svc.load_portfolio(user_id))
+    # Calls the new get_user_portfolios method which returns a list
+    return jsonify(portfolio_svc.get_user_portfolios(user_id))
 
 if __name__ == '__main__':
     print("🚀 ESG Investment Platform starting on http://localhost:5000")
