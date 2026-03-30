@@ -273,6 +273,26 @@ def analyze_portfolio():
     holdings = data.get('holdings', [])
     return jsonify(portfolio_svc.analyze_portfolio(holdings))
 
+@app.route('/api/portfolio/save', methods=['POST'])
+def save_user_portfolio():
+    data = request.json
+    user_id = data.get('user_id')
+    portfolio_data = data.get('portfolio', [])
+    
+    if not user_id:
+        return jsonify({'success': False, 'message': 'User ID is required to save a portfolio.'})
+        
+    return jsonify(portfolio_svc.save_portfolio(user_id, portfolio_data))
+
+@app.route('/api/portfolio/load', methods=['GET'])
+def load_user_portfolio():
+    user_id = request.args.get('user_id')
+    
+    if not user_id:
+        return jsonify({'success': False, 'message': 'User ID is required to load a portfolio.'})
+        
+    return jsonify(portfolio_svc.load_portfolio(user_id))
+
 if __name__ == '__main__':
     print("🚀 ESG Investment Platform starting on http://localhost:5000")
     app.run(debug=True, port=5000)
