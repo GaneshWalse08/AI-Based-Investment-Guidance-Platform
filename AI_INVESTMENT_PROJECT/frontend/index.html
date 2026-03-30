@@ -116,7 +116,6 @@ footer span { color:var(--sage); }
     <p>An AI-powered decision support platform that unites financial performance analytics with ESG sustainability scoring, behavioral clustering, and portfolio optimization.</p>
     <div class="hero-actions">
       <button class="btn-primary" onclick="openModal('register')">🌱 Start Investing Sustainably</button>
-      <button class="btn-secondary" onclick="quickDemo()">▶ Quick Demo</button>
     </div>
   </div>
   <div class="hero-visual">
@@ -205,10 +204,7 @@ footer span { color:var(--sage); }
     <div id="loginForm">
       <h2>Welcome back</h2>
       <p class="subtitle">Sign in to your ESGVision account</p>
-      <div class="demo-hint">
-        <strong>🎓 Demo Credentials</strong>
-        Username: <code>demo_investor</code> &nbsp; Password: <code>demo1234</code>
-      </div>
+      
       <div class="form-group">
         <label>Username</label>
         <input type="text" id="loginUser" placeholder="demo_investor">
@@ -239,29 +235,7 @@ footer span { color:var(--sage); }
         <label>Password</label>
         <input type="password" id="regPass" placeholder="••••••••">
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Risk Tolerance</label>
-          <select id="regRisk">
-            <option value="low">Low</option>
-            <option value="moderate" selected>Moderate</option>
-            <option value="high">High</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>ESG Priority</label>
-          <select id="regEsg">
-            <option value="low">Low</option>
-            <option value="medium" selected>Medium</option>
-            <option value="high">High</option>
-            <option value="very_high">Very High</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Investment Budget (USD)</label>
-        <input type="number" id="regBudget" placeholder="50000" value="50000">
-      </div>
+      
       <button class="btn-full" onclick="doRegister()">Create Account</button>
       <div class="modal-switch">Already have an account? <a onclick="switchForm('login')">Sign In</a></div>
     </div>
@@ -314,17 +288,17 @@ async function doRegister() {
   const username = document.getElementById('regUser').value.trim();
   const email    = document.getElementById('regEmail').value.trim();
   const password = document.getElementById('regPass').value;
-  const preferences = {
-    risk_tolerance : document.getElementById('regRisk').value,
-    esg_priority   : document.getElementById('regEsg').value,
-    budget         : parseFloat(document.getElementById('regBudget').value) || 10000,
-    duration       : '1-3 years',
-    sectors        : [],
-  };
+  
+  // We send an empty object. The backend will automatically apply the default 
+  // preferences (Moderate Risk, Medium ESG, 1-3 years duration).
+  const preferences = {};
+
   if (!username || !email || !password) return showAlert('Please fill in all fields.', 'error');
+  
   try {
     const res = await fetch(`${API}/auth/register`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
+      method:'POST', 
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify({username, email, password, preferences})
     });
     const data = await res.json();
@@ -335,8 +309,11 @@ async function doRegister() {
     } else {
       showAlert(data.message || 'Registration failed.', 'error');
     }
-  } catch(e) { showAlert('Server not reachable. Run: python backend/app.py', 'error'); }
+  } catch(e) { 
+    showAlert('Server not reachable. Run: python backend/app.py', 'error'); 
+  }
 }
+
 function quickDemo() {
   document.getElementById('loginUser').value = 'demo_investor';
   document.getElementById('loginPass').value = 'demo1234';
