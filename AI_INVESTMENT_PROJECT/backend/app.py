@@ -18,6 +18,8 @@ from services.portfolio_service import PortfolioService
 from services.optimization_service import OptimizationService
 from services.clustering_service import ClusteringService
 from services.news_service import NewsService
+from services.chatbot_service import ChatbotService
+
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
 app.secret_key = 'esg_invest_secret_2024'
@@ -29,10 +31,11 @@ metrics_svc       = MetricsService(data_svc)
 esg_svc           = ESGService()
 ranking_svc       = RankingService(metrics_svc, esg_svc)
 personal_svc      = PersonalizationService(ranking_svc, data_svc)
-portfolio_svc     = PortfolioService(metrics_svc, esg_svc)
+portfolio_svc     = PortfolioService(data_svc, esg_svc, metrics_svc)
 optimization_svc  = OptimizationService(data_svc)
 clustering_svc    = ClusteringService()
 news_svc          = NewsService()
+chatbot_svc       = ChatbotService()
 ml_svc            = MLService(data_svc)
 
 # ── CORS helper ───────────────────────────────────────────────────────────────
@@ -244,6 +247,31 @@ if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
 def force_update():
     run_daily_updates()
     return jsonify({'success': True, 'message': 'System data refreshed successfully!'})
+
+# ════════════════════════════════════════════════════════════════════════════
+# CHATBOT ENDPOINT
+# ════════════════════════════════════════════════════════════════════════════
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    data = request.json
+    user_message = data.get('message', '')
+    if not user_message:
+        return jsonify({'reply': 'Please ask a question.'})
+        
+    reply = chatbot_svc.get_response(user_message)
+    return jsonify({'reply': reply})
+
+# ════════════════════════════════════════════════════════════════════════════
+# PORTFOLIO BUILDER
+# ════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
+# MODEL PORTFOLIO ANALYZER
+# ════════════════════════════════════════════════════════════════════════════
+@app.route('/api/portfolio/analyze', methods=['POST'])
+def analyze_portfolio():
+    data = request.json
+    holdings = data.get('holdings', [])
+    return jsonify(portfolio_svc.analyze_portfolio(holdings))
 
 if __name__ == '__main__':
     print("🚀 ESG Investment Platform starting on http://localhost:5000")
