@@ -446,22 +446,33 @@ nav.sidebar-nav { padding:1rem 0; flex:1; }
 
   <!-- ═══════════ OPTIMIZER ═══════════ -->
   <div class="page" id="page-optimizer">
-    <div class="page-header"><h1>Portfolio Optimizer</h1><p>Mean-Variance Optimization (Markowitz) for ideal asset allocation.</p></div>
-    <div class="chart-card">
-      <h3>Select Assets to Optimize</h3>
-      <div class="controls">
-        <select class="ctrl-select" id="optTickerSel" style="min-width:180px;"><option value="">Choose a stock…</option></select>
-        <button class="ctrl-btn" onclick="addToOpt()">+ Add</button>
-        <select class="ctrl-select" id="optGoal">
-          <option value="sharpe">Maximize Sharpe</option>
-          <option value="min_vol">Minimize Volatility</option>
-          <option value="max_ret">Maximize Return</option>
-        </select>
-        <button class="ctrl-btn" onclick="runOptimizer()">⚗️ Optimize</button>
-        <button class="ctrl-btn outline" onclick="clearOpt()">✕ Clear</button>
-      </div>
-      <div class="ticker-pills" id="optPills"></div>
+    <div class="page-header">
+      <h1>Portfolio Optimizer & AI Rebalancing</h1>
+      <p>Select a saved portfolio to get step-by-step instructions on how to rebalance it.</p>
     </div>
+    
+    <div class="chart-card" style="background: var(--paper);">
+      <h3>Select Portfolio to Optimize</h3>
+      <div class="controls" style="margin-top: 1rem;">
+        <select class="ctrl-select" id="optSavedPortfolioSel" style="min-width:250px;">
+          <option value="">Loading your portfolios...</option>
+        </select>
+        <select class="ctrl-select" id="optGoal">
+          <option value="sharpe">Goal: Maximize Sharpe</option>
+          <option value="min_vol">Goal: Minimize Volatility</option>
+          <option value="max_ret">Goal: Maximize Return</option>
+        </select>
+        <button class="ctrl-btn" onclick="optimizeSavedPortfolio()">⚗️ Run AI Rebalance</button>
+      </div>
+    </div>
+
+    <div class="chart-card" id="optVerdictCard" style="display:none; background: #fdfaf4; border-left: 4px solid var(--moss);">
+      <h3 style="display:flex; align-items:center; gap:0.5rem;"><span style="font-size:1.4rem;">🤖</span> AI Rebalancing Verdict</h3>
+      <p id="optVerdictText" style="font-size:0.95rem; line-height:1.6; color:var(--ink); margin-bottom: 1.5rem;"></p>
+      
+      <div id="optComparisonTableContainer"></div>
+    </div>
+
     <div id="optResults" style="display:none">
       <div class="cards-row cards-3" id="optMetricCards"></div>
       <div class="cards-row cards-2">
@@ -1392,7 +1403,119 @@ function applyLoadedPortfolio(portfolioData) {
   analyzeModelPortfolio();        // Recalculate metrics
   closeLoadModal();               // Hide the pop-up menu
 }
+
+// ── SAVED PORTFOLIO OPTIMIZER ──
+let mySavedPortfoliosData = []; // Store fetched portfolios globally
+
+// Fetch portfolios specifically for the Optimizer dropdown
+async function loadPortfoliosForOptimizer() {
+  if (!user || !user.id) return;
+  try {
+    const res = await fetch(`${API}/portfolio/load?user_id=${user.id}`);
+    const data = await res.json();
+    
+    const dropdown = document.getElementById('optSavedPortfolioSel');
+    if (data.success && data.portfolios && data.portfolios.length > 0) {
+      mySavedPortfoliosData = data.portfolios; // Save them to memory
+      dropdown.innerHTML = '<option value="">-- Select a Portfolio --</option>' + 
+        data.portfolios.map((p, index) => `<option value="${index}">${p.name} (${p.data.length} Assets)</option>`).join('');
+    } else {
+      dropdown.innerHTML = '<option value="">No portfolios found. Build one first!</option>';
+    }
+  } catch(e) { console.error("Error loading portfolios for optimizer", e); }
+}
+
+// Ensure this runs when they click the Optimizer tab
+const originalShowPage = showPage;
+showPage = function(name) {
+  originalShowPage(name);
+  if (name === 'optimizer') loadPortfoliosForOptimizer();
+};
+
+async function optimizeSavedPortfolio() {
+  const selectedIndex = document.getElementById('optSavedPortfolioSel').value;
+  const goal = document.getElementById('optGoal').value;
   
+  if (selectedIndex === "") return alert("Please select a saved portfolio to optimize.");
+  
+  const selectedPortfolio = mySavedPortfoliosData[selectedIndex].data;
+  const tickers = selectedPortfolio.map(item => item.ticker); // Extract just the ticker symbols
+
+  // Show loading state
+  document.getElementById('optResults').style.display = 'none';
+  const verdictCard = document.getElementById('optVerdictCard');
+  verdictCard.style.display = 'block';
+  document.getElementById('optVerdictText').innerHTML = '<div class="loading"><span class="spinner"></span> AI is running millions of simulations...</div>';
+  document.getElementById('optComparisonTableContainer').innerHTML = '';
+
+  try {
+    // We now make TWO API calls simultaneously: one for the AI verdict, one for the Frontier chart
+    const [res, frontRes] = await Promise.all([
+      fetch(`${API}/portfolio/optimize_saved`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ holdings: selectedPortfolio, goal: goal })
+      }),
+      fetch(`${API}/portfolio/efficient_frontier`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tickers: tickers })
+      })
+    ]);
+    
+    const data = await res.json();
+    const front = await frontRes.json(); // The data for our chart!
+
+    if (!data.success) return alert("Optimization Error: " + data.message);
+
+    const opt = data.optimal_result;
+
+    // 1. Render Verdict HTML
+    document.getElementById('optVerdictText').innerHTML = data.verdict;
+
+    // 2. Render Comparison Table
+    document.getElementById('optComparisonTableContainer').innerHTML = `
+      <table class="data-table" style="margin-top: 1rem; background: #fff;">
+        <thead><tr><th>Asset</th><th>Current Weight</th><th>Optimal Weight</th><th>AI Action</th></tr></thead>
+        <tbody>${data.comparison.map(c => `
+          <tr>
+            <td><strong>${c.ticker}</strong></td>
+            <td>${c.current_weight.toFixed(1)}%</td>
+            <td style="color:var(--moss); font-weight:bold;">${c.optimal_weight.toFixed(1)}%</td>
+            <td><span class="badge badge-${c.action.toLowerCase() === 'buy' ? 'invest' : c.action.toLowerCase() === 'sell' ? 'hold' : c.action.toLowerCase() === 'remove' ? 'avoid' : 'invest'}" 
+                      style="${c.action === 'HOLD' ? 'background:#e5e7eb; color:#374151;' : ''}">${c.action}</span>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+
+    // 3. Render traditional metrics
+    document.getElementById('optResults').style.display = 'block';
+    document.getElementById('optMetricCards').innerHTML = `
+      <div class="card"><div class="card-title">New Expected Return</div><div class="card-value pos">${opt.expected_return}%</div><div class="card-sub">Was ${data.current_return}%</div></div>
+      <div class="card"><div class="card-title">New Volatility</div><div class="card-value">${opt.expected_vol}%</div></div>
+      <div class="card"><div class="card-title">Sharpe Ratio</div><div class="card-value">${opt.sharpe_ratio}</div><div class="card-sub">Goal: ${opt.goal}</div></div>`;
+      
+    // 4. Render Pie Chart
+    newChart('optPieChart','doughnut',opt.allocation.map(a=>a.ticker),
+      [{data:opt.allocation.map(a=>a.weight),backgroundColor:['#2d6a4f','#52b788','#d4a843','#3b82f6','#8b5cf6','#ef4444','#f97316','#06b6d4'].slice(0,opt.allocation.length),borderWidth:0}],
+      {plugins:{legend:{position:'right'}}});
+
+    // 5. Render Efficient Frontier Chart!
+    if (front.frontier) {
+      const fp = front.frontier;
+      const is = front.individual_stocks || [];
+      newChart('frontierChart','scatter','',
+        [{label:'Efficient Frontier',data:fp.map(p=>({x:p.vol,y:p.return})),borderColor:'#2d6a4f',backgroundColor:'#2d6a4f',pointRadius:3,showLine:true,fill:false},
+         {label:'Individual Stocks',data:is.map(s=>({x:s.vol,y:s.return})),backgroundColor:'#d4a843',pointRadius:6,borderColor:'#92400e'}],
+        {scales:{x:{title:{display:true,text:'Volatility %'}},y:{title:{display:true,text:'Return %'}}}});
+    }
+
+  } catch(e) { 
+    console.error(e);
+    alert("Server error during optimization."); 
+  }
+}
 </script>
 </body>
 </html>

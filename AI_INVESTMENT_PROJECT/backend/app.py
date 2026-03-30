@@ -140,25 +140,92 @@ def personalized_rankings():
 # ════════════════════════════════════════════════════════════════════════════
 # PORTFOLIO ENDPOINTS
 # ════════════════════════════════════════════════════════════════════════════
-@app.route('/api/portfolio/simulate', methods=['POST'])
-def simulate_portfolio():
-    data    = request.json
-    tickers = data.get('tickers', [])
-    weights = data.get('weights', None)
-    return jsonify(portfolio_svc.simulate(tickers, weights))
+@app.route('/api/portfolio/optimize_saved', methods=['POST'])
+def optimize_saved_portfolio():
+    data = request.json
+    holdings = data.get('holdings', [])
+    goal = data.get('goal', 'sharpe')
+    
+    if len(holdings) < 2:
+        return jsonify({'success': False, 'message': 'You need at least 2 assets in a portfolio to optimize it.'})
+        
+    # 1. Analyze current portfolio to get exact current weights
+    current_analysis = portfolio_svc.analyze_portfolio(holdings)
+    tickers = [item['ticker'] for item in current_analysis.get('assets', [])]
+    
+    if len(tickers) < 2:
+        return jsonify({'success': False, 'message': 'Not enough valid assets with historical data to run optimization.'})
+    
+    # 2. Run the math optimizer with a Safety Net
+    try:
+        optimal_result = optimization_svc.optimize(tickers, goal)
+        
+        # If the math engine returns an internal error, catch it here
+        if 'error' in optimal_result:
+            return jsonify({'success': False, 'message': f"Math Engine: {optimal_result['error']}"})
+            
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Optimization crashed: {str(e)}'})
+        
+    # 3. Compare and generate detailed AI verdict
+    comparison = []
+    verdict_lines = []
+    
+    # Safely extract the optimal allocations
+    allocations = optimal_result.get('allocation', [])
+    opt_map = {a['ticker']: a['weight'] for a in allocations}
+    
+    for asset in current_analysis['assets']:
+        ticker = asset['ticker']
+        curr_weight = asset['weight']
+        opt_weight = opt_map.get(ticker, 0.0)
+        diff = opt_weight - curr_weight
+        
+        action = "HOLD"
+        if diff > 3.0: 
+            action = "BUY"
+            verdict_lines.append(f"<li style='margin-bottom:0.5rem;'><strong>{ticker} (BUY):</strong> Increase your holding by <strong>{diff:.1f}%</strong>. The AI identifies this as mathematically essential to improve your risk-to-reward ratio.</li>")
+        elif diff < -3.0: 
+            if opt_weight <= 0.5:
+                action = "REMOVE"
+                verdict_lines.append(f"<li style='margin-bottom:0.5rem; color:#991b1b;'><strong>{ticker} (REMOVE):</strong> Liquidate entirely. The algorithm calculated that this asset drags down your portfolio's efficiency in the current market.</li>")
+            else:
+                action = "SELL"
+                verdict_lines.append(f"<li style='margin-bottom:0.5rem;'><strong>{ticker} (SELL):</strong> Trim your position by <strong>{abs(diff):.1f}%</strong>. Reducing exposure here minimizes unnecessary volatility.</li>")
+        else:
+            verdict_lines.append(f"<li style='margin-bottom:0.5rem; color:#166534;'><strong>{ticker} (HOLD):</strong> Keep current allocation. It is already perfectly balanced.</li>")
+            
+        comparison.append({
+            'ticker': ticker,
+            'current_weight': curr_weight,
+            'optimal_weight': opt_weight,
+            'action': action
+        })
+        
+    goal_text = "Maximize Sharpe Ratio (Best Risk/Reward)" if goal == "sharpe" else "Minimize Volatility (Safest)" if goal == "min_vol" else "Maximize Return (Most Aggressive)"
+    verdict_html = f"To reach your goal to <strong>{goal_text}</strong>, the AI has calculated the mathematical ideal weights for your current assets. Here is what you need to do:<br><br><ul style='margin-left:1.5rem; margin-top:0.5rem;'>{''.join(verdict_lines)}</ul>"
+    
+    return jsonify({
+        'success': True,
+        'current_return': current_analysis['expected_return'],
+        'optimal_result': optimal_result,
+        'comparison': comparison,
+        'verdict': verdict_html
+    })
 
-@app.route('/api/portfolio/optimize', methods=['POST'])
-def optimize_portfolio():
-    data    = request.json
-    tickers = data.get('tickers', [])
-    goal    = data.get('goal', 'sharpe')
-    return jsonify(optimization_svc.optimize(tickers, goal))
 
 @app.route('/api/portfolio/efficient_frontier', methods=['POST'])
 def efficient_frontier():
-    data    = request.json
+    data = request.json
     tickers = data.get('tickers', [])
-    return jsonify(optimization_svc.efficient_frontier(tickers))
+    
+    # Wrap this in a try/except so it NEVER crashes the server into an HTML error
+    try:
+        result = optimization_svc.efficient_frontier(tickers)
+        return jsonify(result)
+    except Exception as e:
+        # Return empty arrays safely if the math engine fails
+        return jsonify({'error': str(e), 'frontier': [], 'individual_stocks': []})
 
 # ════════════════════════════════════════════════════════════════════════════
 # NEWS ENDPOINTS
