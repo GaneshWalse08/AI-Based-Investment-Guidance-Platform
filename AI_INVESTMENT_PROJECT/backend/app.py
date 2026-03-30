@@ -266,16 +266,33 @@ def predict_stock(ticker):
 def sector_heatmap():
     return jsonify(esg_svc.sector_heatmap(metrics_svc))
 
+
 @app.route('/api/dashboard/summary', methods=['GET'])
 def dashboard_summary():
+    # 1. Fetch all stocks (your DataService ALREADY calculates change_pct for us!)
+    all_stocks = data_svc.get_all_stocks()
+    
+    # 2. Sort the stocks based on 'change_pct'
+    # Gainers: Highest positive change first
+    movers_sorted = sorted(all_stocks, key=lambda x: x.get('change_pct', 0), reverse=True)
+    
+    # Grab the top 10
+    top_gainers = movers_sorted[:10]
+    
+    # Grab the bottom 10 (Losers) and reverse the list so the most negative is at the top
+    top_losers = movers_sorted[-10:]
+    top_losers.reverse()
+
+    # 3. Return the payload with the new data
     return jsonify({
         'market_overview'   : data_svc.market_overview(),
         'top_esg'           : esg_svc.get_rankings('all')[:5],
         'top_ranked'        : ranking_svc.compute_rankings()[:5],
         'sentiment'         : news_svc.market_sentiment_summary(),
         'recent_news'       : news_svc.get_news()[:6],
+        'top_gainers'       : top_gainers,      
+        'top_losers'        : top_losers        
     })
-
     # ════════════════════════════════════════════════════════════════════════════
 # DAILY AUTO UPDATE SCHEDULER
 # ════════════════════════════════════════════════════════════════════════════
@@ -315,6 +332,100 @@ def force_update():
     run_daily_updates()
     return jsonify({'success': True, 'message': 'System data refreshed successfully!'})
 
+# ════════════════════════════════════════════════════════════════════════════
+# GOAL-BASED INVESTING ENDPOINT
+# ════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
+# GOAL-BASED INVESTING ENDPOINT
+# ════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
+# GOAL-BASED INVESTING ENDPOINT
+# ════════════════════════════════════════════════════════════════════════════
+@app.route('/api/goals/plan', methods=['POST'])
+def plan_goal():
+    try:
+        data = request.json
+        goal_type = data.get('goal_type', 'Custom Goal')
+        target = float(data.get('target_amount') or 500000)
+        years = float(data.get('years') or 3)
+        initial = float(data.get('initial_investment') or 0)
+
+        if years <= 0:
+            return jsonify({'success': False, 'message': 'Years must be greater than 0.'})
+
+        if years < 3:
+            strategy, risk_tolerance = "Conservative (Capital Preservation)", "low"
+        elif years <= 7:
+            strategy, risk_tolerance = "Balanced Growth", "moderate"
+        else:
+            strategy, risk_tolerance = "Aggressive Growth (Wealth Accumulation)", "high"
+
+        ranked = ranking_svc.compute_rankings()
+        valid = []
+        for s in ranked:
+            ret = s.get('return_1y')
+            if ret is not None and float(ret) > 0:
+                valid.append(s)
+
+        if risk_tolerance == "low":
+            valid = sorted(valid, key=lambda x: (float(x.get('volatility') or 0), -float(x.get('esg_total') or 0)))
+        elif risk_tolerance == "moderate":
+            valid = sorted(valid, key=lambda x: -float(x.get('sharpe') or 0))
+        else:
+            valid = sorted(valid, key=lambda x: -float(x.get('return_1y') or 0))
+
+        selected_stocks = valid[:6]
+        
+        if not selected_stocks:
+            return jsonify({'success': False, 'message': 'Not enough stock data available. Please click "Refresh Market Data" in the sidebar.'})
+
+        if len(selected_stocks) >= 6:
+            weights = [30, 25, 15, 10, 10, 10]
+        else:
+            weights = [100 // len(selected_stocks)] * len(selected_stocks)
+            weights[0] += 100 - sum(weights) 
+            
+        portfolio = []
+        raw_expected_return = 0
+        
+        for i, stock in enumerate(selected_stocks):
+            weight = weights[i]
+            stock_ret = float(stock.get('return_1y') or 0)
+            raw_expected_return += (stock_ret * (weight / 100))
+            
+            portfolio.append({
+                'ticker': stock['ticker'],
+                'sector': stock.get('sector', 'Unknown'),
+                'weight': weight,
+                'return_1y': round(stock_ret, 2),
+                'esg_rating': stock.get('esg_rating', 'N/A'),
+                'investment_amount': round(initial * (weight / 100), 2)
+            })
+
+        if years >= 10:
+            expected_port_return = min(raw_expected_return, 15.0)
+        elif years >= 5:
+            expected_port_return = min(raw_expected_return, 18.0)
+        else:
+            expected_port_return = raw_expected_return
+
+        # 🚀 NEW REALISTIC VERDICT (No more millions projected)
+        verdict = f"To reach your <strong>{goal_type}</strong> goal of ₹{target:,.0f} in {years} years, the AI has built a <strong>{strategy}</strong> portfolio. "
+        verdict += f"This selection of {len(selected_stocks)} ESG-compliant stocks focuses on your timeframe and risk profile, targeting an expected annual return of <strong style='color:var(--moss);'>{expected_port_return:.1f}%</strong> based on historical data."
+
+        return jsonify({
+            'success': True,
+            'expected_return': round(expected_port_return, 2),
+            'strategy': strategy,
+            'portfolio': portfolio,
+            'verdict': verdict,
+            'initial_invested': initial
+        })
+        
+    except Exception as e:
+        import traceback
+        print("GOAL PLAN ERROR:", traceback.format_exc())
+        return jsonify({'success': False, 'message': f'Server Math Error: {str(e)}'})
 # ════════════════════════════════════════════════════════════════════════════
 # CHATBOT ENDPOINT
 # ════════════════════════════════════════════════════════════════════════════
@@ -361,6 +472,35 @@ def load_user_portfolio():
         
     # Calls the new get_user_portfolios method which returns a list
     return jsonify(portfolio_svc.get_user_portfolios(user_id))
+
+@app.route('/api/admin/seed_users', methods=['GET'])
+def seed_users():
+    """Generates dummy users so the clustering algorithm has data to work with."""
+    dummy_profiles = [
+        ("EcoWarrior", "low", "very_high", "5+ years", 50000, ["Clean Energy", "Healthcare"]),
+        ("DayTrader", "high", "low", "< 1 year", 150000, ["Technology", "Finance"]),
+        ("RetireeBob", "low", "medium", "5+ years", 500000, ["Consumer Staples", "Utilities"]),
+        ("TechBro", "high", "low", "1-3 years", 20000, ["Technology"]),
+        ("BalancedJane", "moderate", "high", "3-5 years", 75000, ["Clean Energy", "Technology", "Healthcare"])
+    ]
+    
+    count = 0
+    for username, risk, esg, dur, budget, sectors in dummy_profiles:
+        # Check if user already exists to prevent duplicates
+        existing = next((u for u in auth_svc.users.values() if u['username'] == username), None)
+        if not existing:
+            prefs = {
+                'risk_tolerance': risk,
+                'esg_priority': esg,
+                'duration': dur,
+                'budget': budget,
+                'sectors': sectors
+            }
+            # Assuming your auth_svc.register takes these parameters
+            auth_svc.register(username, f"{username.lower()}@demo.com", "password123", prefs)
+            count += 1
+            
+    return jsonify({"success": True, "message": f"Successfully added {count} dummy users for clustering."})
 
 if __name__ == '__main__':
     print("🚀 ESG Investment Platform starting on http://localhost:5000")

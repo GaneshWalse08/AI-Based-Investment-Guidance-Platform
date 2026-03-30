@@ -162,6 +162,19 @@ nav.sidebar-nav { padding:1rem 0; flex:1; }
 .modal-close { position:absolute; top:1rem; right:1.2rem; background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--smoke); }
 .port-list-item { padding:1rem; border:1px solid var(--border); border-radius:8px; margin-bottom:0.8rem; cursor:pointer; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center; }
 .port-list-item:hover { border-color:var(--moss); background:var(--mist); }
+
+.cluster-chip { 
+    display: inline-flex; 
+    align-items: center;
+    padding: 0.35rem 0.8rem; 
+    border-radius: 20px; 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    color: #fff; 
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 </style>
 </head>
 <body>
@@ -188,6 +201,8 @@ nav.sidebar-nav { padding:1rem 0; flex:1; }
     <div class="nav-item" onclick="showPage('ml')"><span class="icon">🤖</span> ML Predictions</div>
     <div class="nav-item" onclick="showPage('clustering')"><span class="icon">🔮</span> Investor Clustering</div>
     <div class="nav-item" onclick="showPage('research')"><span class="icon">🔬</span> Research Analytics</div>
+    <div class="nav-section">Life Goals</div>
+    <div class="nav-item" onclick="showPage('goals')"><span class="icon">🎯</span> Goal-Based AI</div>
   </nav>
   <div class="sidebar-footer">
     <div id="sidebarRisk" style="font-size:0.82rem;margin-bottom:0.3rem;"></div>
@@ -223,6 +238,25 @@ nav.sidebar-nav { padding:1rem 0; flex:1; }
       <div class="chart-card">
         <h3>Sector ESG vs Return Comparison</h3>
         <div class="chart-wrap"><canvas id="sectorChart"></canvas></div>
+      </div>
+    </div>
+    <div class="cards-row cards-2">
+      <div class="chart-card" style="border-top: 4px solid var(--sage);">
+        <h3 style="display:flex; align-items:center; gap:0.5rem;">
+          <span style="font-size:1.2rem;">🚀</span> Today's Top 10 Gainers
+        </h3>
+        <div id="dashGainers">
+          <div class="loading"><span class="spinner"></span>Analyzing market movers…</div>
+        </div>
+      </div>
+      
+      <div class="chart-card" style="border-top: 4px solid var(--rust);">
+        <h3 style="display:flex; align-items:center; gap:0.5rem;">
+          <span style="font-size:1.2rem;">🔻</span> Today's Top 10 Losers
+        </h3>
+        <div id="dashLosers">
+          <div class="loading"><span class="spinner"></span>Analyzing market movers…</div>
+        </div>
       </div>
     </div>
     <div class="chart-card">
@@ -576,6 +610,105 @@ nav.sidebar-nav { padding:1rem 0; flex:1; }
   </div>
 </div>
 
+<div class="page" id="page-goals">
+    <div class="page-header">
+      <h1>Goal-Based AI Investing</h1>
+      <p>Tell the AI what you are saving for, and it will build the perfect 6-stock portfolio to get you there.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:var(--moss);" onclick="setGoalData('🚗 Buy a Car', 800000, 3)" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚗</div>
+        <div class="card-title" style="color:var(--moss);">Buy a Car</div>
+        <div class="card-sub">Goal: ₹8L in 3 Years</div>
+      </div>
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:#3b82f6;" onclick="setGoalData('🎓 Higher Studies', 1500000, 5)" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎓</div>
+        <div class="card-title" style="color:#3b82f6;">Higher Studies</div>
+        <div class="card-sub">Goal: ₹15L in 5 Years</div>
+      </div>
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:#8b5cf6;" onclick="setGoalData('💍 Dream Wedding', 1200000, 4)" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💍</div>
+        <div class="card-title" style="color:#8b5cf6;">Dream Wedding</div>
+        <div class="card-sub">Goal: ₹12L in 4 Years</div>
+      </div>
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:#f59e0b;" onclick="setGoalData('🏡 House Downpayment', 2500000, 7)" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏡</div>
+        <div class="card-title" style="color:#f59e0b;">House Deposit</div>
+        <div class="card-sub">Goal: ₹25L in 7 Years</div>
+      </div>
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:#06b6d4;" onclick="setGoalData('✈️ World Tour', 500000, 2)" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">✈️</div>
+        <div class="card-title" style="color:#06b6d4;">World Tour</div>
+        <div class="card-sub">Goal: ₹5L in 2 Years</div>
+      </div>
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:var(--gold);" onclick="setGoalData('💼 Retirement', 10000000, 15)" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💼</div>
+        <div class="card-title" style="color:var(--gold);">Retirement</div>
+        <div class="card-sub">Goal: ₹1Cr in 15 Years</div>
+      </div>
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:var(--border); background:var(--paper); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;" onclick="setGoalData('', '', '')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color:var(--smoke);">➕</div>
+        <div class="card-title" style="color:var(--smoke); margin:0;">Custom Goal</div>
+        <div class="card-sub">Enter your own</div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="background: var(--paper);">
+      <h3>Define Your Goal</h3>
+      <div class="controls" style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Goal Name</label>
+          <input type="text" class="ctrl-input" id="goalName" value="💼 Retirement" style="width:100%;">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Target (₹)</label>
+          <input type="number" class="ctrl-input" id="goalTarget" value="10000000" style="width:100%;">
+        </div>
+        <div style="flex:1; min-width:100px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Years</label>
+          <input type="number" class="ctrl-input" id="goalYears" value="15" style="width:100%;">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Start Amt (₹)</label>
+          <input type="number" class="ctrl-input" id="goalInitial" value="200000" style="width:100%;">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--moss);">Monthly SIP (₹)</label>
+          <input type="number" class="ctrl-input" id="goalMonthly" value="25000" style="width:100%; border-color:var(--moss);">
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button class="ctrl-btn" onclick="generateGoalPlan()" style="height: 40px;">🪄 Generate AI Strategy</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="goalResultsArea" style="display:none;">
+      
+      <div class="chart-card" style="background: #fdfaf4; border-left: 4px solid var(--moss);">
+        <h3 style="display:flex; align-items:center; gap:0.5rem;"><span style="font-size:1.4rem;">🤖</span> AI Strategy Verdict</h3>
+        <p id="goalVerdictText" style="font-size:1.05rem; line-height:1.6; color:var(--ink);"></p>
+      </div>
+
+      <div class="cards-row cards-3">
+        <div class="card"><div class="card-title">Initial Investment</div><div class="card-value" id="resInitialInvest">—</div></div>
+        <div class="card"><div class="card-title">Expected Annual Return</div><div class="card-value pos" id="resExpRet">—</div></div>
+        <div class="card"><div class="card-title">Selected AI Strategy</div><div class="card-value" id="resStrategy" style="font-size: 1.1rem; margin-top:0.5rem; color:var(--moss);">—</div></div>
+      </div>
+
+      <div class="cards-row cards-2">
+        <div class="chart-card">
+          <h3>The 6-Stock AI Portfolio</h3>
+          <div id="goalPortfolioTable"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Target Asset Allocation</h3>
+          <div class="chart-wrap"><canvas id="goalAllocationChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <script>
@@ -651,6 +784,7 @@ async function initDashboard() {
   try {
     const res  = await fetch(`${API}/dashboard/summary`);
     const data = await res.json();
+    
     // Overview cards
     const mo = data.market_overview;
     document.getElementById('trackedCount').textContent = mo.total_stocks;
@@ -661,6 +795,7 @@ async function initDashboard() {
     const topEsgItem = data.top_esg[0];
     document.getElementById('topEsg').textContent    = topEsgItem.total;
     document.getElementById('topEsgName').textContent= `${topEsgItem.ticker} (${topEsgItem.rating})`;
+    
     // ESG bar chart
     const labels = data.top_ranked.map(r => r.ticker);
     const scores = data.top_ranked.map(r => r.total_score);
@@ -669,21 +804,52 @@ async function initDashboard() {
       [{label:'Total Score',data:scores,backgroundColor:'#2d6a4f99',borderColor:'#2d6a4f',borderWidth:2},
        {label:'ESG Score', data:esgScores,backgroundColor:'#52b78899',borderColor:'#52b788',borderWidth:2}],
       {scales:{y:{min:0,max:100}}});
+      
     // Sector chart
-    // Sector chart (Upgraded to show LIVE Returns alongside ESG)
-    const sectorRes = await fetch(`${API}/research/sector_heatmap`); // Fetching the live metrics endpoint
+    const sectorRes = await fetch(`${API}/research/sector_heatmap`); 
     const sectors   = await sectorRes.json();
     const sKeys = Object.keys(sectors);
     newChart('sectorChart','radar',sKeys,
       [
         {label:'ESG Total',data:sKeys.map(s=>sectors[s].total),backgroundColor:'#2d6a4f33',borderColor:'#2d6a4f',borderWidth:2,pointBackgroundColor:'#2d6a4f'},
-        // Added the second dataset for live returns!
         {label:'Live 1Y Return (%)',data:sKeys.map(s=>sectors[s].avg_return),backgroundColor:'#d4a84333',borderColor:'#d4a843',borderWidth:2,pointBackgroundColor:'#d4a843'}
       ],
-      {scales:{r:{ticks:{stepSize:20}}}}); // Removed min 0 so negative returns can display properly
+      {scales:{r:{ticks:{stepSize:20}}}}); 
+      
+    // 🚀 NEW: Render Top Gainers Table
+    const gainersHTML = data.top_gainers.map(s => `
+      <tr>
+        <td><strong>${s.ticker}</strong><br><span style="font-size:0.7rem; color:var(--smoke);">${s.name.substring(0, 15)}</span></td>
+        <td style="font-weight:600;">₹${(s.price * 83.5).toLocaleString('en-IN', {maximumFractionDigits: 2})}</td>
+        <td class="pos" style="font-weight:700;">+${s.change_pct}%</td>
+      </tr>
+    `).join('');
+    
+    document.getElementById('dashGainers').innerHTML = `
+      <table class="data-table" style="margin-top:0.5rem;">
+        <thead><tr><th>Asset</th><th>Current Price (₹)</th><th>Daily Change</th></tr></thead>
+        <tbody>${gainersHTML}</tbody>
+      </table>`;
+
+    // 🔻 NEW: Render Top Losers Table
+    const losersHTML = data.top_losers.map(s => `
+      <tr>
+        <td><strong>${s.ticker}</strong><br><span style="font-size:0.7rem; color:var(--smoke);">${s.name.substring(0, 15)}</span></td>
+        <td style="font-weight:600;">₹${(s.price * 83.5).toLocaleString('en-IN', {maximumFractionDigits: 2})}</td>
+        <td class="neg" style="font-weight:700;">${s.change_pct}%</td>
+      </tr>
+    `).join('');
+    
+    document.getElementById('dashLosers').innerHTML = `
+      <table class="data-table" style="margin-top:0.5rem;">
+        <thead><tr><th>Asset</th><th>Current Price (₹)</th><th>Daily Change</th></tr></thead>
+        <tbody>${losersHTML}</tbody>
+      </table>`;
+
     // News
     renderNewsItems('dashNews', data.recent_news.slice(0,6));
-  } catch(e) { console.error('Dashboard:', e); }
+    
+  } catch(e) { console.error('Dashboard Error:', e); }
 }
 
 // ── NEWS ─────────────────────────────────────────────────────────────────────
@@ -901,6 +1067,8 @@ async function runOptimizer() {
 
 // ── CLUSTERING ────────────────────────────────────────────────────────────────
 async function loadClustering() {
+  document.getElementById('investorClusterTable').innerHTML = '<div class="loading"><span class="spinner"></span> Running AI Segmentation...</div>';
+  
   try {
     const [invRes, stkRes] = await Promise.all([
       fetch(`${API}/clustering/investors`),
@@ -908,45 +1076,82 @@ async function loadClustering() {
     ]);
     const inv = await invRes.json();
     const stk = await stkRes.json();
-    // Personas
-    const personas = inv.personas || {};
-    document.getElementById('personasBox').innerHTML = Object.entries(personas).map(([id,p])=>`
-      <div style="margin-bottom:1rem;padding:1rem;border-radius:8px;border:1px solid var(--border)">
-        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem">
-          <span style="width:12px;height:12px;border-radius:50%;background:${p.color};display:inline-block"></span>
-          <strong>${p.name}</strong>
-          <span style="margin-left:auto;font-size:0.8rem;color:var(--smoke)">Cluster ${id}</span>
-        </div>
-        <p style="font-size:0.85rem;color:var(--smoke)">${p.description}</p>
-      </div>`).join('');
-    // Cluster pie
-    const sizes = inv.cluster_sizes || {};
-    const clusterLabels = Object.keys(sizes).map(k=>(personas[k]||{}).name || `Cluster ${k}`);
-    newChart('clusterPieChart','doughnut',clusterLabels,
-      [{data:Object.values(sizes),backgroundColor:Object.keys(sizes).map(k=>(personas[k]||{}).color||'#9ca3af'),borderWidth:0}],
-      {plugins:{legend:{position:'bottom'}}});
-    // Investor table
-    const assignments = inv.assignments || [];
-    document.getElementById('investorClusterTable').innerHTML = `
-      <table class="data-table">
-        <thead><tr><th>Username</th><th>Cluster</th><th>Persona</th></tr></thead>
-        <tbody>${assignments.map(a=>`
-          <tr><td>${a.username}</td><td>${a.cluster}</td>
-          <td><span class="cluster-chip" style="background:${(personas[a.cluster]||{}).color||'#9ca3af'}">${a.persona}</span></td></tr>`).join('')}
-        </tbody></table>`;
-    // Stock cluster scatter
-    const stocks = stk.stocks || [];
-    const colors = ['#2d6a4f','#d4a843','#3b82f6','#ef4444'];
-    const clusterNames = stk.cluster_names || {};
-    const datasets = [0,1,2,3].map(ci=>({
-      label: clusterNames[ci]||`Group ${ci}`,
-      data : stocks.filter(s=>s.cluster===ci).map(s=>({x:s.volatility,y:s.return_1y,label:s.ticker})),
-      backgroundColor: colors[ci],
-      pointRadius: 7,
-    }));
-    newChart('stockClusterChart','scatter','',datasets,
-      {scales:{x:{title:{display:true,text:'Annualised Volatility %'}},y:{title:{display:true,text:'1Y Return %'}}}});
-  } catch(e) { console.error('Clustering:', e); }
+
+    // 🚨 1. HANDLE THE INVESTOR CLUSTERING ERROR
+    if (inv.error) {
+      document.getElementById('investorClusterTable').innerHTML = `
+        <div style="background: #fef2f2; border-left: 4px solid var(--rust); padding: 1rem; border-radius: 4px; color: var(--rust);">
+          <strong>⚠️ Not Enough Data:</strong> ${inv.error}. The AI requires more registered users with diverse preferences to form meaningful behavioral clusters.
+        </div>`;
+      document.getElementById('personasBox').innerHTML = '<p style="color:var(--smoke);">Awaiting more data...</p>';
+    } else {
+      // ✅ SUCCESS STATE: Render Personas
+      const personas = inv.personas || {};
+      document.getElementById('personasBox').innerHTML = Object.entries(personas).map(([id,p])=>`
+        <div style="margin-bottom:1rem;padding:1rem;border-radius:8px;border:1px solid var(--border); background:#fff;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem">
+            <span style="width:12px;height:12px;border-radius:50%;background:${p.color};display:inline-block"></span>
+            <strong style="font-size:1.05rem;">${p.name}</strong>
+            <span style="margin-left:auto;font-size:0.75rem; font-weight:700; background:var(--mist); padding:0.2rem 0.5rem; border-radius:12px; color:var(--moss)">Cluster ${id}</span>
+          </div>
+          <p style="font-size:0.85rem;color:var(--smoke);line-height:1.5;">${p.description}</p>
+        </div>`).join('');
+
+      // Cluster Pie Chart
+      const sizes = inv.cluster_sizes || {};
+      const clusterLabels = Object.keys(sizes).map(k=>(personas[k]||{}).name || `Cluster ${k}`);
+      newChart('clusterPieChart','doughnut',clusterLabels,
+        [{data:Object.values(sizes),backgroundColor:Object.keys(sizes).map(k=>(personas[k]||{}).color||'#9ca3af'),borderWidth:0}],
+        {plugins:{legend:{position:'bottom'}}});
+
+      // Investor Table
+      const assignments = inv.assignments || [];
+      document.getElementById('investorClusterTable').innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>User ID</th><th>Investor Name</th><th>AI Segment</th></tr></thead>
+          <tbody>${assignments.map(a=>`
+            <tr>
+              <td style="color:var(--smoke); font-family:monospace;">#${a.user_id.toString().padStart(4, '0')}</td>
+              <td style="font-weight:600;">${a.username}</td>
+              <td><span class="cluster-chip" style="background:${(personas[a.cluster]||{}).color||'#9ca3af'}">${a.persona}</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    // 📈 2. ALWAYS RENDER STOCK CLUSTERS (Usually has enough data)
+    if (stk.error) {
+       document.getElementById('stockClusterChart').parentElement.innerHTML = `<div class="loading">${stk.error}</div>`;
+    } else {
+      const stocks = stk.stocks || [];
+      const colors = ['#ef4444','#2d6a4f','#3b82f6','#d4a843']; // Mapped to the specific vibes
+      const clusterNames = stk.cluster_names || {};
+      const datasets = [0,1,2,3].map(ci=>({
+        label: clusterNames[ci]||`Group ${ci}`,
+        data : stocks.filter(s=>s.cluster===ci).map(s=>({x:s.volatility,y:s.return_1y, label: s.ticker})),
+        backgroundColor: colors[ci],
+        pointRadius: 6,
+        pointHoverRadius: 9,
+      }));
+      
+      newChart('stockClusterChart','scatter','',datasets, {
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.raw.label}: Vol ${ctx.raw.x.toFixed(1)}%, Ret ${ctx.raw.y.toFixed(1)}%`
+            }
+          }
+        },
+        scales:{
+          x:{title:{display:true,text:'Annualised Volatility (Risk) %'}},
+          y:{title:{display:true,text:'1Y Return (Reward) %'}}
+        }
+      });
+    }
+  } catch(e) { 
+    console.error('Clustering Error:', e); 
+    document.getElementById('investorClusterTable').innerHTML = '<div class="loading">Failed to load AI clustering.</div>';
+  }
 }
 
 // ── RESEARCH ──────────────────────────────────────────────────────────────────
@@ -1516,6 +1721,110 @@ async function optimizeSavedPortfolio() {
     alert("Server error during optimization."); 
   }
 }
+
+// ── GOAL-BASED INVESTING ─────────────────────────────────────────────────────
+let goalGrowthChartInstance = null;
+
+// Helper to pre-fill the form when a card is clicked
+function setGoalData(name, target, years, defaultSip = 10000) {
+  document.getElementById('goalName').value = name;
+  document.getElementById('goalTarget').value = target;
+  document.getElementById('goalYears').value = years;
+  
+  if (name === '') {
+    document.getElementById('goalInitial').value = '';
+    document.getElementById('goalMonthly').value = '';
+    document.getElementById('goalName').placeholder = "e.g. 🐶 Startup Fund";
+    document.getElementById('goalName').focus();
+  } else {
+    document.getElementById('goalInitial').value = '200000';
+    document.getElementById('goalMonthly').value = defaultSip;
+  }
+
+  const btn = document.querySelector('button[onclick="generateGoalPlan()"]');
+  if (btn) {
+    btn.style.transform = 'scale(1.05)';
+    setTimeout(() => btn.style.transform = 'none', 200);
+  }
+}
+
+async function generateGoalPlan() {
+  const btn = document.querySelector('button[onclick="generateGoalPlan()"]');
+  btn.textContent = '⏳ Calculating...';
+  
+  const payload = {
+    goal_type: document.getElementById('goalName').value,
+    target_amount: parseFloat(document.getElementById('goalTarget').value),
+    years: parseFloat(document.getElementById('goalYears').value),
+    initial_investment: parseFloat(document.getElementById('goalInitial').value) || 0,
+    monthly_contribution: parseFloat(document.getElementById('goalMonthly').value) || 0 
+  };
+
+  try {
+    const res = await fetch(`${API}/goals/plan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    
+    if (!data.success) return alert(data.message);
+
+    document.getElementById('goalResultsArea').style.display = 'block';
+    document.getElementById('goalVerdictText').innerHTML = data.verdict;
+    
+    // 🚀 NEW MAPPINGS
+    document.getElementById('resInitialInvest').textContent = `₹${data.initial_invested.toLocaleString('en-IN')}`;
+    document.getElementById('resExpRet').textContent = `${data.expected_return}%`;
+    document.getElementById('resStrategy').textContent = data.strategy;
+
+    document.getElementById('goalPortfolioTable').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Asset</th><th>Allocation</th><th>Invest Now (₹)</th><th>ESG</th></tr></thead>
+        <tbody>${data.portfolio.map(p => `
+          <tr>
+            <td><strong>${p.ticker}</strong><br><span style="font-size:0.7rem;color:var(--smoke)">${p.sector}</span></td>
+            <td><strong>${p.weight}%</strong></td>
+            <td style="color:var(--moss); font-weight:600;">₹${p.investment_amount.toLocaleString('en-IN')}</td>
+            <td><span class="badge badge-esg-${p.esg_rating.toLowerCase()}">${p.esg_rating}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+
+    // 🚀 RENDER ALLOCATION DOUGHNUT CHART
+    const labels = data.portfolio.map(p => p.ticker);
+    const weights = data.portfolio.map(p => p.weight);
+    const colors = ['#2d6a4f', '#52b788', '#d4a843', '#3b82f6', '#8b5cf6', '#ef4444'];
+    
+    if (goalGrowthChartInstance) goalGrowthChartInstance.destroy();
+    const ctx = document.getElementById('goalAllocationChart').getContext('2d');
+    
+    goalGrowthChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: weights,
+          backgroundColor: colors.slice(0, weights.length),
+          borderWidth: 0
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'right' } },
+        cutout: '65%'
+      }
+    });
+
+  } catch (e) {
+    console.error(e);
+    alert('🚨 CONNECTION ERROR: ' + e.message + '\n\nPlease look at your Python Terminal window.');
+  } finally {
+    btn.textContent = '🪄 Generate AI Strategy';
+  }
+}
+
 </script>
 </body>
 </html>
