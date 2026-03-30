@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — ESGVision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --ink:    #0d1117;
+  --paper:  #f8f5f0;
+  --moss:   #2d6a4f;
+  --sage:   #52b788;
+  --gold:   #d4a843;
+  --rust:   #c0392b;
+  --mist:   #e8f0eb;
+  --smoke:  #6b7280;
+  --border: #d1c9be;
+  --sidebar-w: 240px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); display:flex; min-height:100vh; }
+
+/* SIDEBAR */
+.sidebar { width:var(--sidebar-w); background:#fff; border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; z-index:50; overflow-y:auto; }
+.sidebar-logo { padding:1.5rem 1.5rem 1rem; font-family:'DM Serif Display',serif; font-size:1.3rem; color:var(--moss); border-bottom:1px solid var(--mist); }
+.sidebar-logo span { color:var(--gold); }
+.sidebar-user { padding:1rem 1.5rem; border-bottom:1px solid var(--mist); }
+.user-avatar { width:36px; height:36px; background:var(--moss); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:0.85rem; margin-right:0.5rem; }
+.user-name { font-size:0.85rem; font-weight:600; }
+.user-cluster { font-size:0.72rem; color:var(--smoke); }
+nav.sidebar-nav { padding:1rem 0; flex:1; }
+.nav-section { padding:0.3rem 1.5rem; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--smoke); margin-bottom:0.3rem; margin-top:0.8rem; }
+.nav-item { display:flex; align-items:center; gap:0.75rem; padding:0.65rem 1.5rem; font-size:0.88rem; font-weight:500; color:var(--smoke); cursor:pointer; border-left:3px solid transparent; transition:all .15s; }
+.nav-item:hover { color:var(--moss); background:var(--mist); }
+.nav-item.active { color:var(--moss); background:var(--mist); border-left-color:var(--moss); font-weight:600; }
+.nav-item .icon { font-size:1rem; width:20px; text-align:center; }
+.sidebar-footer { padding:1.2rem 1.5rem; border-top:1px solid var(--mist); font-size:0.8rem; color:var(--smoke); }
+.btn-logout { background:none; border:1px solid var(--border); border-radius:6px; padding:0.4rem 0.8rem; font-size:0.8rem; cursor:pointer; font-family:inherit; color:var(--smoke); width:100%; margin-top:0.5rem; transition:all .2s; }
+.btn-logout:hover { background:var(--rust); color:#fff; border-color:var(--rust); }
+
+/* MAIN */
+.main { margin-left:var(--sidebar-w); flex:1; padding:2rem; min-height:100vh; }
+.page { display:none; }
+.page.active { display:block; }
+.page-header { margin-bottom:1.5rem; }
+.page-header h1 { font-family:'DM Serif Display',serif; font-size:1.8rem; }
+.page-header p { color:var(--smoke); font-size:0.9rem; margin-top:0.2rem; }
+
+/* CARDS */
+.cards-row { display:grid; gap:1rem; margin-bottom:1.5rem; }
+.cards-4 { grid-template-columns:repeat(4,1fr); }
+.cards-3 { grid-template-columns:repeat(3,1fr); }
+.cards-2 { grid-template-columns:repeat(2,1fr); }
+.card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:1.3rem; }
+.card-title { font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--smoke); margin-bottom:0.4rem; font-weight:600; }
+.card-value { font-family:'DM Serif Display',serif; font-size:2rem; }
+.card-sub { font-size:0.8rem; color:var(--smoke); margin-top:0.2rem; }
+.pos { color:#16a34a; } .neg { color:var(--rust); }
+.chart-card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:1.3rem; margin-bottom:1.5rem; }
+.chart-card h3 { font-family:'DM Serif Display',serif; font-size:1.1rem; margin-bottom:1rem; }
+.chart-wrap { position:relative; height:260px; }
+
+/* TABLES */
+.data-table { width:100%; border-collapse:collapse; font-size:0.87rem; }
+.data-table th { text-align:left; padding:0.6rem 0.8rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--smoke); border-bottom:1px solid var(--border); background:var(--paper); font-weight:600; }
+.data-table td { padding:0.65rem 0.8rem; border-bottom:1px solid var(--mist); }
+.data-table tr:hover td { background:var(--mist); }
+.badge { display:inline-flex; align-items:center; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:700; }
+.badge-invest  { background:#dcfce7; color:#166534; }
+.badge-hold    { background:#fef9c3; color:#854d0e; }
+.badge-avoid   { background:#fee2e2; color:#991b1b; }
+.badge-esg-aaa { background:#d1fae5; color:#065f46; }
+.badge-esg-aa  { background:#e0f2fe; color:#075985; }
+.badge-esg-a   { background:#ede9fe; color:#4c1d95; }
+.badge-esg-bbb { background:#fef3c7; color:#92400e; }
+.badge-esg-bb  { background:#ffedd5; color:#c2410c; }
+.badge-esg-b   { background:#fee2e2; color:#991b1b; }
+
+/* CONTROLS */
+.controls { display:flex; gap:1rem; margin-bottom:1.2rem; flex-wrap:wrap; align-items:center; }
+.ctrl-select, .ctrl-input { padding:0.5rem 0.8rem; border:1.5px solid var(--border); border-radius:8px; font-size:0.88rem; font-family:inherit; background:#fff; }
+.ctrl-select:focus, .ctrl-input:focus { outline:none; border-color:var(--moss); }
+.ctrl-btn { background:var(--moss); color:#fff; padding:0.5rem 1.2rem; border-radius:8px; border:none; font-size:0.88rem; font-weight:600; cursor:pointer; font-family:inherit; transition:background .2s; }
+.ctrl-btn:hover { background:#1e4d38; }
+.ctrl-btn.outline { background:transparent; color:var(--moss); border:2px solid var(--moss); }
+.ctrl-btn.outline:hover { background:var(--mist); }
+
+/* PORTFOLIO BUILDER */
+.ticker-pills { display:flex; flex-wrap:wrap; gap:0.5rem; margin:1rem 0; min-height:40px; }
+.pill { background:var(--moss); color:#fff; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.82rem; display:flex; align-items:center; gap:0.4rem; }
+.pill button { background:none; border:none; color:#fff; cursor:pointer; font-size:1rem; line-height:1; }
+
+/* SENTIMENT */
+.sentiment-bar { height:12px; border-radius:6px; background:#e5e7eb; overflow:hidden; margin:0.4rem 0; }
+.sentiment-fill { height:100%; border-radius:6px; transition:width 0.6s; }
+.fill-pos { background:var(--sage); }
+.fill-neg { background:var(--rust); }
+.fill-neu { background:var(--gold); }
+
+/* NEWS */
+.news-item { padding:0.8rem 0; border-bottom:1px solid var(--mist); }
+.news-item:last-child { border:none; }
+.news-headline { font-size:0.9rem; font-weight:500; margin-bottom:0.3rem; line-height:1.4; }
+.news-meta { display:flex; gap:0.8rem; font-size:0.75rem; color:var(--smoke); align-items:center; }
+.news-sentiment { padding:0.15rem 0.5rem; border-radius:10px; font-size:0.72rem; font-weight:700; }
+.s-positive { background:#dcfce7; color:#166534; }
+.s-negative { background:#fee2e2; color:#991b1b; }
+.s-neutral  { background:#f3f4f6; color:#6b7280; }
+
+/* CLUSTER CHIPS */
+.cluster-chip { display:inline-block; padding:0.4rem 1rem; border-radius:20px; font-size:0.82rem; font-weight:600; color:#fff; margin:0.2rem; }
+
+/* ESG GAUGE */
+.esg-ring-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; }
+.esg-ring { text-align:center; }
+.esg-ring svg { display:block; margin:0 auto; }
+.esg-ring-label { font-size:0.8rem; color:var(--smoke); margin-top:0.3rem; }
+.esg-ring-val { font-family:'DM Serif Display',serif; font-size:1.1rem; }
+
+/* LOADING */
+.loading { text-align:center; padding:3rem; color:var(--smoke); font-size:0.9rem; }
+.spinner { display:inline-block; width:24px; height:24px; border:3px solid var(--border); border-top-color:var(--moss); border-radius:50%; animation:spin 0.8s linear infinite; margin-right:0.5rem; vertical-align:middle; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* EXPLANATION BOX */
+.explain-box { background:var(--mist); border-left:3px solid var(--moss); border-radius:0 8px 8px 0; padding:0.75rem 1rem; font-size:0.85rem; color:#1a3d2b; margin-top:0.3rem; }
+
+/* SEARCH */
+.search-wrap { position:relative; }
+.search-wrap input { padding-left:2.2rem; }
+.search-wrap::before { content:'🔍'; position:absolute; left:0.7rem; top:50%; transform:translateY(-50%); font-size:0.85rem; }
+
+/* RESPONSIVE helpers */
+@media(max-width:900px) { .cards-4,.cards-3 { grid-template-columns:1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">ESG<span>Vision</span></div>
+  <div class="sidebar-user">
+    <span class="user-avatar" id="avatarInitial">?</span>
+    <span class="user-name" id="sidebarUsername">Loading…</span>
+    <div class="user-cluster" id="sidebarCluster">—</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showPage('dashboard')"><span class="icon">🏠</span> Dashboard</div>
+    <div class="nav-item" onclick="showPage('news')"><span class="icon">📰</span> Market News</div>
+    <div class="nav-section">Stocks</div>
+    <div class="nav-item" onclick="showPage('rankings')"><span class="icon">📊</span> ESG Rankings</div>
+    <div class="nav-item" onclick="showPage('personalized')"><span class="icon">🎯</span> My Recommendations</div>
+    <div class="nav-section">Portfolio</div>
+    <div class="nav-item" onclick="showPage('portfolio')"><span class="icon">💼</span> Portfolio Builder</div>
+    <div class="nav-item" onclick="showPage('optimizer')"><span class="icon">⚗️</span> Optimizer</div>
+    <div class="nav-section">Analytics</div>
+    <div class="nav-item" onclick="showPage('ml')"><span class="icon">🤖</span> ML Predictions</div>
+    <div class="nav-item" onclick="showPage('clustering')"><span class="icon">🔮</span> Investor Clustering</div>
+    <div class="nav-item" onclick="showPage('research')"><span class="icon">🔬</span> Research Analytics</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div id="sidebarRisk" style="font-size:0.82rem;margin-bottom:0.3rem;"></div>
+    
+    <button class="btn-logout" style="margin-bottom:0.5rem; color:var(--moss); border-color:var(--moss);" onclick="forceDataRefresh()" id="refreshBtn">
+      🔄 Refresh Market Data
+    </button>
+    
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- ═══════════ DASHBOARD ═══════════ -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <h1>Good morning, <span id="welcomeName">Investor</span> 👋</h1>
+      <p>Here's your sustainable investment intelligence briefing for today.</p>
+    </div>
+    <div class="cards-row cards-4" id="overviewCards">
+      <div class="card"><div class="card-title">Market Mood</div><div class="card-value" id="mktMood">—</div><div class="card-sub" id="mktChange">—</div></div>
+      <div class="card"><div class="card-title">Fear &amp; Greed</div><div class="card-value" id="fearGreed">—</div><div class="card-sub">Market Sentiment Index</div></div>
+      <div class="card"><div class="card-title">Top ESG Score</div><div class="card-value" id="topEsg">—</div><div class="card-sub" id="topEsgName">—</div></div>
+      <div class="card"><div class="card-title">Stocks Tracked</div><div class="card-value" id="trackedCount">...</div><div class="card-sub" id="sectorCount">...</div></div>
+    </div>
+    <div class="cards-row cards-2">
+      <div class="chart-card">
+        <h3>Top 5 ESG Ranked Stocks</h3>
+        <div class="chart-wrap"><canvas id="topEsgChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Sector ESG vs Return Comparison</h3>
+        <div class="chart-wrap"><canvas id="sectorChart"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>📰 Latest Market News</h3>
+      <div id="dashNews"><div class="loading"><span class="spinner"></span>Loading news…</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ NEWS ═══════════ -->
+  <div class="page" id="page-news">
+    <div class="page-header">
+      <h1>Market News &amp; Sentiment</h1>
+      <p>AI-analyzed financial headlines with sentiment scoring.</p>
+      
+      <div class="explain-box" style="margin-top: 1rem; max-width: 850px;">
+        <strong style="font-size: 0.95rem;">🧠 How this works:</strong> Our AI (Natural Language Processing) reads live headlines and scores them from -1.0 to +1.0.<br>
+        <div style="margin-top: 0.4rem; display: flex; gap: 1.5rem; flex-wrap: wrap;">
+          <span>🟢 <strong>Positive:</strong> Score > 0.1</span>
+          <span>🔴 <strong>Negative:</strong> Score < -0.1</span>
+          <span>🟡 <strong>Neutral:</strong> Between -0.1 and 0.1</span>
+        </div>
+        <div style="margin-top: 0.4rem;">
+          <strong>Fear & Greed Index:</strong> Scales the overall market mood from 0 (Extreme Fear / Selling) to 100 (Extreme Greed / Buying). 50 is perfectly neutral.
+        </div>
+      </div>
+
+    </div>
+    <div class="cards-row cards-4" id="sentimentCards">
+      <div class="card"><div class="card-title">Overall Sentiment</div><div class="card-value" id="sentMood">—</div></div>
+      <div class="card"><div class="card-title">Positive Articles</div><div class="card-value pos" id="sentPos">—</div></div>
+      <div class="card"><div class="card-title">Negative Articles</div><div class="card-value neg" id="sentNeg">—</div></div>
+      <div class="card"><div class="card-title">Fear &amp; Greed Index</div><div class="card-value" id="sentFG">—</div></div>
+    </div>
+    <div class="cards-row cards-2">
+      <div class="chart-card">
+        <h3>Sentiment by Category</h3>
+        <div class="chart-wrap"><canvas id="sentCatChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Article Distribution</h3>
+        <div class="chart-wrap"><canvas id="sentDistChart"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>All Headlines</h3>
+      <div id="allNews"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ RANKINGS ═══════════ -->
+  <div class="page" id="page-rankings">
+    <div class="page-header"><h1>ESG-Aware Stock Rankings</h1><p>Combined financial performance and ESG sustainability scoring.</p></div>
+    <div class="controls">
+      <select class="ctrl-select" id="rankSector" onchange="loadRankings()">
+        <option value="all">All Sectors</option>
+        <option value="Technology">Technology</option>
+        <option value="Healthcare">Healthcare</option>
+        <option value="Clean Energy">Clean Energy</option>
+        <option value="Finance">Finance</option>
+        <option value="Consumer Staples">Consumer Staples</option>
+        <option value="Utilities">Utilities</option>
+        <option value="Energy">Energy</option>
+        <option value="Industrial">Industrial</option>
+      </select>
+      <label style="font-size:0.88rem;font-weight:600;">ESG Weight:
+        <input type="range" id="esgWeight" min="0" max="0.8" step="0.1" value="0.4" oninput="document.getElementById('esgWeightVal').textContent=Math.round(this.value*100)+'%'; loadRankings();">
+        <span id="esgWeightVal">40%</span>
+      </label>
+    </div>
+    <div class="chart-card">
+      <div id="rankingsTable"><div class="loading"><span class="spinner"></span>Loading rankings…</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PERSONALIZED ═══════════ -->
+  <div class="page" id="page-personalized">
+    <div class="page-header"><h1>My Personalized Recommendations</h1><p>Filtered for your risk tolerance, budget, and sector preferences.</p></div>
+    <div class="controls" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; background: #fff; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+      
+      <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">1. Time Horizon
+        <select class="ctrl-select" id="perDuration" style="width:100%; margin-top:0.3rem;">
+          <option value="< 1 year">&lt; 1 year (Short Term)</option>
+          <option value="1-3 years" selected>1-3 years (Medium Term)</option>
+          <option value="5+ years">5+ years (Long Term)</option>
+        </select>
+      </label>
+
+      <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">2. Total Budget (₹ INR)
+        <input type="number" class="ctrl-input" id="perBudget" value="100000" style="width:100%; margin-top:0.3rem;">
+      </label>
+
+      <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">3. Risk Tolerance
+        <select class="ctrl-select" id="perRisk" style="width:100%; margin-top:0.3rem;">
+          <option value="low">Low Risk (Stable)</option>
+          <option value="moderate" selected>Medium Risk</option>
+          <option value="high">High Risk (Aggressive)</option>
+        </select>
+      </label>
+
+      <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">4. Company Size
+        <select class="ctrl-select" id="perCap" style="width:100%; margin-top:0.3rem;">
+          <option value="all">All Sizes</option>
+          <option value="large">Large Cap (&gt; $100B)</option>
+          <option value="mid">Mid Cap ($10B - $100B)</option>
+          <option value="small">Small Cap (&lt; $10B)</option>
+        </select>
+      </label>
+
+      <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">5. Target Sector
+        <select class="ctrl-select" id="perSector" style="width:100%; margin-top:0.3rem;">
+          <option value="">All Sectors</option>
+          <option value="Technology">Technology</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Clean Energy">Clean Energy</option>
+          <option value="Finance">Finance</option>
+          <option value="Consumer Staples">Consumer Staples</option>
+          <option value="Utilities">Utilities</option>
+          <option value="Energy">Energy</option>
+          <option value="Industrial">Industrial</option>
+        </select>
+      </label>
+
+      <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">6. ESG Priority
+        <select class="ctrl-select" id="perEsg" style="width:100%; margin-top:0.3rem;">
+          <option value="low">Low Priority</option>
+          <option value="medium" selected>Medium Priority</option>
+          <option value="high">High Priority</option>
+          <option value="very_high">Very High (Strict)</option>
+        </select>
+      </label>
+      
+      <div style="grid-column: span 3; text-align: right; margin-top: 0.5rem;">
+        <button class="ctrl-btn" onclick="loadPersonalized()" style="padding: 0.7rem 2rem; font-size: 1rem;">🔍 Analyze & Recommend</button>
+      </div>
+    </div>
+
+    <div id="perStats" class="cards-row cards-3" style="margin-bottom:1.2rem;"></div>
+    <div class="chart-card">
+      <div id="personalizedTable"><div class="loading"><span class="spinner"></span>Awaiting inputs...</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PORTFOLIO BUILDER ═══════════ -->
+  <div class="page" id="page-portfolio">
+    <div class="page-header"><h1>Portfolio Builder &amp; Simulator</h1><p>Combine stocks and simulate portfolio performance.</p></div>
+    <div class="chart-card">
+      <h3>Select Stocks</h3>
+      <div class="controls">
+        <select class="ctrl-select" id="portTickerSel" style="min-width:180px;">
+          <option value="">Choose a stock…</option>
+        </select>
+        <button class="ctrl-btn" onclick="addToPortfolio()">+ Add</button>
+        <button class="ctrl-btn outline" onclick="clearPortfolio()">✕ Clear</button>
+        <button class="ctrl-btn" onclick="simulatePortfolio()">▶ Simulate</button>
+      </div>
+      <div class="ticker-pills" id="portPills"></div>
+    </div>
+    <div id="portResults" style="display:none">
+      <div class="cards-row cards-4" id="portMetricCards"></div>
+      <div class="cards-row cards-2">
+        <div class="chart-card"><h3>Asset Allocation</h3><div class="chart-wrap"><canvas id="portPieChart"></canvas></div></div>
+        <div class="chart-card"><h3>Risk vs Return vs Benchmark</h3><div class="chart-wrap"><canvas id="portBarChart"></canvas></div></div>
+      </div>
+      <div class="chart-card">
+        <h3>Portfolio Composition Detail</h3>
+        <div id="portCompositionTable"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ OPTIMIZER ═══════════ -->
+  <div class="page" id="page-optimizer">
+    <div class="page-header"><h1>Portfolio Optimizer</h1><p>Mean-Variance Optimization (Markowitz) for ideal asset allocation.</p></div>
+    <div class="chart-card">
+      <h3>Select Assets to Optimize</h3>
+      <div class="controls">
+        <select class="ctrl-select" id="optTickerSel" style="min-width:180px;"><option value="">Choose a stock…</option></select>
+        <button class="ctrl-btn" onclick="addToOpt()">+ Add</button>
+        <select class="ctrl-select" id="optGoal">
+          <option value="sharpe">Maximize Sharpe</option>
+          <option value="min_vol">Minimize Volatility</option>
+          <option value="max_ret">Maximize Return</option>
+        </select>
+        <button class="ctrl-btn" onclick="runOptimizer()">⚗️ Optimize</button>
+        <button class="ctrl-btn outline" onclick="clearOpt()">✕ Clear</button>
+      </div>
+      <div class="ticker-pills" id="optPills"></div>
+    </div>
+    <div id="optResults" style="display:none">
+      <div class="cards-row cards-3" id="optMetricCards"></div>
+      <div class="cards-row cards-2">
+        <div class="chart-card"><h3>Optimal Allocation</h3><div class="chart-wrap"><canvas id="optPieChart"></canvas></div></div>
+        <div class="chart-card"><h3>Efficient Frontier</h3><div class="chart-wrap"><canvas id="frontierChart"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ CLUSTERING ═══════════ -->
+  <div class="page" id="page-clustering">
+    <div class="page-header"><h1>Investor Clustering</h1><p>KMeans behavioral segmentation of investor profiles.</p></div>
+    <div class="cards-row cards-2">
+      <div class="chart-card"><h3>Investor Personas</h3><div id="personasBox"></div></div>
+      <div class="chart-card"><h3>Cluster Distribution</h3><div class="chart-wrap"><canvas id="clusterPieChart"></canvas></div></div>
+    </div>
+    <div class="chart-card">
+      <h3>Stock Clustering — Financial &amp; ESG Groups</h3>
+      <div class="chart-wrap" style="height:300px;"><canvas id="stockClusterChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Investor Assignments</h3>
+      <div id="investorClusterTable"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ RESEARCH ═══════════ -->
+  <div class="page" id="page-research">
+    <div class="page-header"><h1>Research Analytics</h1><p>Academic-grade correlation analysis and ESG-financial relationships.</p></div>
+    <div class="cards-row cards-2">
+      <div class="chart-card"><h3>ESG Score vs 1Y Return</h3><div class="chart-wrap"><canvas id="esgReturnScatter"></canvas></div></div>
+      <div class="chart-card"><h3>ESG Score vs Volatility</h3><div class="chart-wrap"><canvas id="esgVolScatter"></canvas></div></div>
+    </div>
+    <div class="chart-card">
+      <h3>Sector ESG Heatmap</h3>
+      <div id="sectorHeatmap"></div>
+    </div>
+    <div class="chart-card" id="corrCard">
+      <h3>ESG-Financial Correlation Summary</h3>
+      <div id="corrSummary"></div>
+    </div>
+  </div>
+
+
+  <div class="page" id="page-ml">
+    <div class="page-header">
+      <h1>Machine Learning Price Prediction</h1>
+      <p>Auto-regressive AI model trained on live historical data to forecast 30-day trends.</p>
+    </div>
+    
+    <div class="chart-card">
+      <h3>Select Asset for AI Analysis</h3>
+      <div class="controls">
+        <select class="ctrl-select" id="mlTickerSel" style="min-width:180px;">
+          <option value="">Choose a stock…</option>
+        </select>
+        <button class="ctrl-btn" onclick="runMLPrediction()">🤖 Run Prediction</button>
+      </div>
+    </div>
+
+    <div id="mlResults" style="display:none">
+      <div class="cards-row cards-3">
+        <div class="card"><div class="card-title">Current Price</div><div class="card-value" id="mlCurrentPrice">—</div></div>
+        <div class="card"><div class="card-title">Predicted Price (30 Days)</div><div class="card-value" id="mlPredictedPrice">—</div></div>
+        <div class="card"><div class="card-title">AI Trend Signal</div><div class="card-value" id="mlTrendSignal">—</div><div class="card-sub" id="mlChangePct">—</div></div>
+      </div>
+      
+      <div class="chart-card">
+        <h3>30-Day Forecast vs Historical Price</h3>
+        <div class="chart-wrap" style="height: 400px;">
+          <canvas id="mlForecastChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API = 'http://localhost:5000/api';
+const sels = ['portTickerSel','optTickerSel', 'mlTickerSel'];
+let user = JSON.parse(localStorage.getItem('esg_user') || 'null');
+let portTickers = [];
+let optTickers  = [];
+let allStocks   = [];
+
+// ── INIT ────────────────────────────────────────────────────────────────────
+if (!user) { window.location.href = 'index.html'; }
+else {
+  document.getElementById('welcomeName').textContent = user.username;
+  document.getElementById('sidebarUsername').textContent = user.username;
+  document.getElementById('avatarInitial').textContent = user.username[0].toUpperCase();
+  const risk = user.preferences?.risk_tolerance || 'moderate';
+  document.getElementById('sidebarRisk').textContent = `Risk: ${risk.charAt(0).toUpperCase()+risk.slice(1)}`;
+  document.getElementById('perRisk').value = risk;
+  document.getElementById('perEsg').value  = user.preferences?.esg_priority || 'medium';
+  initDashboard();
+  loadStockList();
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  const loaders = {
+    rankings    : loadRankings,
+    personalized: loadPersonalized,
+    news        : loadNews,
+    clustering  : loadClustering,
+    research    : loadResearch,
+  };
+  if (loaders[name]) loaders[name]();
+}
+
+function logout() {
+  localStorage.removeItem('esg_user');
+  window.location.href = 'index.html';
+}
+
+// ── STOCK LIST ───────────────────────────────────────────────────────────────
+// ── STOCK LIST ───────────────────────────────────────────────────────────────
+async function loadStockList() {
+  try {
+    const res = await fetch(`${API}/stocks`);
+    allStocks = await res.json();
+    
+    // ADDED 'mlTickerSel' TO THIS ARRAY! 👇
+    const sels = ['portTickerSel', 'optTickerSel', 'mlTickerSel']; 
+    
+    sels.forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return; // Safety check in case a page hasn't loaded
+      sel.innerHTML = '<option value="">Choose a stock…</option>';
+      allStocks.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.ticker;
+        o.textContent = `${s.ticker} — ${s.name}`;
+        sel.appendChild(o);
+      });
+    });
+  } catch(e) { console.error('Stock list:', e); }
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────────
+async function initDashboard() {
+  try {
+    const res  = await fetch(`${API}/dashboard/summary`);
+    const data = await res.json();
+    // Overview cards
+    const mo = data.market_overview;
+    document.getElementById('trackedCount').textContent = mo.total_stocks;
+    document.getElementById('sectorCount').textContent = mo.sectors.length + " sectors covered";
+    document.getElementById('mktMood').textContent   = mo.market_mood;
+    document.getElementById('mktChange').textContent = `Avg change: ${mo.avg_market_change}%`;
+    document.getElementById('fearGreed').textContent = data.sentiment.fear_greed_index;
+    const topEsgItem = data.top_esg[0];
+    document.getElementById('topEsg').textContent    = topEsgItem.total;
+    document.getElementById('topEsgName').textContent= `${topEsgItem.ticker} (${topEsgItem.rating})`;
+    // ESG bar chart
+    const labels = data.top_ranked.map(r => r.ticker);
+    const scores = data.top_ranked.map(r => r.total_score);
+    const esgScores = data.top_ranked.map(r => r.esg_total);
+    newChart('topEsgChart','bar',labels,
+      [{label:'Total Score',data:scores,backgroundColor:'#2d6a4f99',borderColor:'#2d6a4f',borderWidth:2},
+       {label:'ESG Score', data:esgScores,backgroundColor:'#52b78899',borderColor:'#52b788',borderWidth:2}],
+      {scales:{y:{min:0,max:100}}});
+    // Sector chart
+    // Sector chart (Upgraded to show LIVE Returns alongside ESG)
+    const sectorRes = await fetch(`${API}/research/sector_heatmap`); // Fetching the live metrics endpoint
+    const sectors   = await sectorRes.json();
+    const sKeys = Object.keys(sectors);
+    newChart('sectorChart','radar',sKeys,
+      [
+        {label:'ESG Total',data:sKeys.map(s=>sectors[s].total),backgroundColor:'#2d6a4f33',borderColor:'#2d6a4f',borderWidth:2,pointBackgroundColor:'#2d6a4f'},
+        // Added the second dataset for live returns!
+        {label:'Live 1Y Return (%)',data:sKeys.map(s=>sectors[s].avg_return),backgroundColor:'#d4a84333',borderColor:'#d4a843',borderWidth:2,pointBackgroundColor:'#d4a843'}
+      ],
+      {scales:{r:{ticks:{stepSize:20}}}}); // Removed min 0 so negative returns can display properly
+    // News
+    renderNewsItems('dashNews', data.recent_news.slice(0,6));
+  } catch(e) { console.error('Dashboard:', e); }
+}
+
+// ── NEWS ─────────────────────────────────────────────────────────────────────
+async function loadNews() {
+  try {
+    const [newsRes, sentRes] = await Promise.all([
+      fetch(`${API}/news`), fetch(`${API}/news/sentiment`)
+    ]);
+    const news = await newsRes.json();
+    const sent = await sentRes.json();
+    document.getElementById('sentMood').textContent = sent.market_mood;
+    document.getElementById('sentPos').textContent  = sent.positive_count;
+    document.getElementById('sentNeg').textContent  = sent.negative_count;
+    document.getElementById('sentFG').textContent   = sent.fear_greed_index;
+    // Category chart
+    const cats = Object.keys(sent.category_sentiment);
+    const vals = cats.map(c => sent.category_sentiment[c]);
+    newChart('sentCatChart','bar',cats,
+      [{label:'Avg Sentiment',data:vals,
+        backgroundColor:vals.map(v=>v>0.1?'#52b788aa':v<-0.1?'#c0392baa':'#d4a843aa'),
+        borderColor:vals.map(v=>v>0.1?'#2d6a4f':v<-0.1?'#991b1b':'#92400e'),borderWidth:2}],{});
+    // Distribution donut
+    newChart('sentDistChart','doughnut',['Positive','Neutral','Negative'],
+      [{data:[sent.positive_count,sent.neutral_count,sent.negative_count],
+        backgroundColor:['#52b788','#d4a843','#c0392b'],borderWidth:0}],
+      {plugins:{legend:{position:'bottom'}}});
+    renderNewsItems('allNews', news);
+  } catch(e) { console.error('News:', e); }
+}
+
+function renderNewsItems(containerId, news) {
+  const container = document.getElementById(containerId);
+  if (!news || !news.length) { container.innerHTML = '<div class="loading">No news available.</div>'; return; }
+  container.innerHTML = news.map(n => `
+    <div class="news-item">
+      <div class="news-headline">${n.headline}</div>
+      <div class="news-meta">
+        <span class="news-sentiment ${n.sentiment_label==='Positive'?'s-positive':n.sentiment_label==='Negative'?'s-negative':'s-neutral'}">${n.sentiment_label} ${n.sentiment_pct}%</span>
+        <span>${n.source}</span>
+        <span>${n.category}</span>
+        ${n.ticker ? `<span><strong>${n.ticker}</strong></span>` : ''}
+        <span>${n.timestamp}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── RANKINGS ─────────────────────────────────────────────────────────────────
+async function loadRankings() {
+  document.getElementById('rankingsTable').innerHTML = '<div class="loading"><span class="spinner"></span>Computing…</div>';
+  try {
+    const sector = document.getElementById('rankSector').value;
+    const weight = document.getElementById('esgWeight').value;
+    const res  = await fetch(`${API}/rankings?sector=${sector}&esg_weight=${weight}`);
+    const data = await res.json();
+    document.getElementById('rankingsTable').innerHTML = `
+      <table class="data-table">
+        <thead><tr>
+          <th>#</th><th>Ticker</th><th>Sector</th>
+          <th>1Y Return</th><th>Volatility</th><th>Sharpe</th>
+          <th>ESG Score</th><th>ESG Rating</th><th>Total Score</th><th>Signal</th><th>Reasoning</th>
+        </tr></thead>
+        <tbody>${data.map(r=>`
+          <tr>
+            <td><strong>${r.rank}</strong></td>
+            <td><strong>${r.ticker}</strong></td>
+            <td><span style="font-size:0.8rem;color:var(--smoke)">${r.sector}</span></td>
+            <td class="${r.return_1y>=0?'pos':'neg'}">${r.return_1y}%</td>
+            <td>${r.volatility}%</td>
+            <td>${r.sharpe}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:0.5rem">
+                <div style="flex:1;height:6px;background:#e5e7eb;border-radius:3px"><div style="width:${r.esg_total}%;height:100%;background:var(--sage);border-radius:3px"></div></div>
+                ${r.esg_total}
+              </div>
+            </td>
+            <td><span class="badge badge-esg-${r.esg_rating.toLowerCase()}">${r.esg_rating}</span></td>
+            <td><strong>${r.total_score}</strong></td>
+            <td><span class="badge badge-${r.classification.toLowerCase()}">${r.classification}</span></td>
+            <td><div class="explain-box" style="max-width:280px;font-size:0.78rem">${r.explanation}</div></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) { document.getElementById('rankingsTable').innerHTML = '<div class="loading">Error loading rankings.</div>'; }
+}
+
+// ── PERSONALIZED ──────────────────────────────────────────────────────────────
+// ── PERSONALIZED ──────────────────────────────────────────────────────────────
+async function loadPersonalized() {
+  document.getElementById('personalizedTable').innerHTML = '<div class="loading"><span class="spinner"></span>Analyzing Market...</div>';
+  try {
+    const sector = document.getElementById('perSector').value;
+    const body = {
+      duration      : document.getElementById('perDuration').value,
+      budget        : document.getElementById('perBudget').value,
+      risk_tolerance: document.getElementById('perRisk').value,
+      cap_size      : document.getElementById('perCap').value,
+      sectors       : sector ? [sector] : [],
+      esg_priority  : document.getElementById('perEsg').value,
+    };
+    
+    const res  = await fetch(`${API}/rankings/personalized`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const data = await res.json();
+    
+    document.getElementById('perStats').innerHTML = `
+      <div class="card"><div class="card-title">Assets Analyzed</div><div class="card-value">${data.total_candidates}</div></div>
+      <div class="card"><div class="card-title">Perfect Matches</div><div class="card-value pos">${data.filtered_count}</div></div>
+      <div class="card"><div class="card-title">Max Allowed Volatility</div><div class="card-value" style="color:var(--rust);">${data.applied_filters.max_volatility}%</div><div class="card-sub">Adjusted for ${data.applied_filters.investment_duration} horizon</div></div>`;
+      
+    const recs = data.recommendations;
+    if (!recs.length) { document.getElementById('personalizedTable').innerHTML = '<div class="loading">No stocks match these exact filters. Try loosening your risk or size criteria.</div>'; return; }
+    
+    document.getElementById('personalizedTable').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>#</th><th>Asset</th><th>Size (Cap)</th><th>Live Price (₹)</th><th>Suggested Buy (10%)</th><th>1Y Return</th><th>ESG</th><th>AI Signal</th></tr></thead>
+        <tbody>${recs.map((r,i)=>`
+          <tr>
+            <td>${i+1}</td>
+            <td><strong>${r.ticker}</strong><br><span style="font-size:0.75rem;color:var(--smoke)">${r.sector}</span></td>
+            <td>$${r.market_cap}B</td>
+            <td><strong>₹${r.price_inr.toLocaleString('en-IN')}</strong></td>
+            <td style="color:var(--moss); font-weight:600;">${r.suggested_shares} Shares</td>
+            <td class="${r.return_1y>=0?'pos':'neg'}">${r.return_1y}%</td>
+            <td>${r.esg_total} <span class="badge badge-esg-${r.esg_rating.toLowerCase()}">${r.esg_rating}</span></td>
+            <td><span class="badge badge-${r.classification.toLowerCase()}">${r.classification}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) { 
+      console.error(e);
+      document.getElementById('personalizedTable').innerHTML = '<div class="loading">Error generating recommendations.</div>'; 
+  }
+}
+
+// ── PORTFOLIO ─────────────────────────────────────────────────────────────────
+function addToPortfolio() {
+  const sel = document.getElementById('portTickerSel');
+  const t = sel.value; if (!t || portTickers.includes(t)) return;
+  portTickers.push(t);
+  renderPills('portPills', portTickers, portTickers);
+}
+function clearPortfolio() { portTickers = []; document.getElementById('portPills').innerHTML = ''; document.getElementById('portResults').style.display='none'; }
+
+async function simulatePortfolio() {
+  if (portTickers.length < 1) return alert('Add at least 1 stock');
+  try {
+    const res  = await fetch(`${API}/portfolio/simulate`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tickers:portTickers})});
+    const data = await res.json();
+    document.getElementById('portResults').style.display='block';
+    const bm = data.vs_benchmark;
+    document.getElementById('portMetricCards').innerHTML = `
+      <div class="card"><div class="card-title">Portfolio Return</div><div class="card-value ${data.portfolio_return>=0?'pos':'neg'}">${data.portfolio_return}%</div><div class="card-sub">vs S&P: ${bm.return_alpha>=0?'+':''}${bm.return_alpha}%</div></div>
+      <div class="card"><div class="card-title">Volatility</div><div class="card-value">${data.portfolio_vol}%</div><div class="card-sub">Benchmark: ${bm.sp500_vol}%</div></div>
+      <div class="card"><div class="card-title">Sharpe Ratio</div><div class="card-value">${data.portfolio_sharpe}</div></div>
+      <div class="card"><div class="card-title">ESG Score</div><div class="card-value" style="color:var(--moss)">${data.portfolio_esg}</div><div class="card-sub">Diversification: ${data.diversification_score}%</div></div>`;
+    // Pie
+    const comp = data.composition;
+    newChart('portPieChart','doughnut',comp.map(c=>c.ticker),
+      [{data:comp.map(c=>c.weight),backgroundColor:['#2d6a4f','#52b788','#d4a843','#3b82f6','#8b5cf6','#ef4444','#f97316','#06b6d4'].slice(0,comp.length),borderWidth:0}],
+      {plugins:{legend:{position:'right'}}});
+    // Bar comparison
+    newChart('portBarChart','bar',['Portfolio','S&P 500'],
+      [{label:'Return %',data:[data.portfolio_return, bm.sp500_return],backgroundColor:['#2d6a4f','#9ca3af'],borderRadius:6},
+       {label:'Volatility %',data:[data.portfolio_vol, bm.sp500_vol],backgroundColor:['#52b788','#d1d5db'],borderRadius:6}],{});
+    // Table
+    document.getElementById('portCompositionTable').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Ticker</th><th>Weight</th><th>1Y Return</th><th>Volatility</th><th>Sharpe</th><th>ESG</th><th>Rating</th></tr></thead>
+        <tbody>${comp.map(c=>`
+          <tr><td><strong>${c.ticker}</strong></td><td>${c.weight}%</td>
+          <td class="${c.return_1y>=0?'pos':'neg'}">${c.return_1y}%</td>
+          <td>${c.volatility}%</td><td>${c.sharpe}</td>
+          <td>${c.esg_total}</td>
+          <td><span class="badge badge-esg-${c.esg_rating.toLowerCase()}">${c.esg_rating}</span></td></tr>`).join('')}
+        </tbody></table>`;
+  } catch(e) { console.error('Portfolio sim:', e); }
+}
+
+// ── OPTIMIZER ─────────────────────────────────────────────────────────────────
+function addToOpt() {
+  const sel = document.getElementById('optTickerSel');
+  const t = sel.value; if (!t || optTickers.includes(t)) return;
+  optTickers.push(t);
+  renderPills('optPills', optTickers, optTickers);
+}
+function clearOpt() { optTickers=[]; document.getElementById('optPills').innerHTML=''; document.getElementById('optResults').style.display='none'; }
+
+async function runOptimizer() {
+  if (optTickers.length < 2) return alert('Add at least 2 stocks');
+  const goal = document.getElementById('optGoal').value;
+  try {
+    const [optRes, frontRes] = await Promise.all([
+      fetch(`${API}/portfolio/optimize`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tickers:optTickers,goal})}),
+      fetch(`${API}/portfolio/efficient_frontier`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tickers:optTickers})})
+    ]);
+    const opt   = await optRes.json();
+    const front = await frontRes.json();
+    document.getElementById('optResults').style.display='block';
+    document.getElementById('optMetricCards').innerHTML = `
+      <div class="card"><div class="card-title">Expected Return</div><div class="card-value pos">${opt.expected_return}%</div></div>
+      <div class="card"><div class="card-title">Expected Volatility</div><div class="card-value">${opt.expected_vol}%</div></div>
+      <div class="card"><div class="card-title">Sharpe Ratio</div><div class="card-value">${opt.sharpe_ratio}</div><div class="card-sub">Optimization: ${opt.goal}</div></div>`;
+    newChart('optPieChart','doughnut',opt.allocation.map(a=>a.ticker),
+      [{data:opt.allocation.map(a=>a.weight),backgroundColor:['#2d6a4f','#52b788','#d4a843','#3b82f6','#8b5cf6','#ef4444','#f97316','#06b6d4'].slice(0,opt.allocation.length),borderWidth:0}],
+      {plugins:{legend:{position:'right'}}});
+    // Efficient frontier scatter
+    const fp = front.frontier || [];
+    const is = front.individual_stocks || [];
+    newChart('frontierChart','scatter','',
+      [{label:'Efficient Frontier',data:fp.map(p=>({x:p.vol,y:p.return})),borderColor:'#2d6a4f',backgroundColor:'#2d6a4f',pointRadius:3,showLine:true,fill:false},
+       {label:'Individual Stocks',data:is.map(s=>({x:s.vol,y:s.return})),backgroundColor:'#d4a843',pointRadius:6,borderColor:'#92400e'}],
+      {scales:{x:{title:{display:true,text:'Volatility %'}},y:{title:{display:true,text:'Return %'}}}});
+  } catch(e) { console.error('Optimizer:', e); }
+}
+
+// ── CLUSTERING ────────────────────────────────────────────────────────────────
+async function loadClustering() {
+  try {
+    const [invRes, stkRes] = await Promise.all([
+      fetch(`${API}/clustering/investors`),
+      fetch(`${API}/clustering/stocks`)
+    ]);
+    const inv = await invRes.json();
+    const stk = await stkRes.json();
+    // Personas
+    const personas = inv.personas || {};
+    document.getElementById('personasBox').innerHTML = Object.entries(personas).map(([id,p])=>`
+      <div style="margin-bottom:1rem;padding:1rem;border-radius:8px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem">
+          <span style="width:12px;height:12px;border-radius:50%;background:${p.color};display:inline-block"></span>
+          <strong>${p.name}</strong>
+          <span style="margin-left:auto;font-size:0.8rem;color:var(--smoke)">Cluster ${id}</span>
+        </div>
+        <p style="font-size:0.85rem;color:var(--smoke)">${p.description}</p>
+      </div>`).join('');
+    // Cluster pie
+    const sizes = inv.cluster_sizes || {};
+    const clusterLabels = Object.keys(sizes).map(k=>(personas[k]||{}).name || `Cluster ${k}`);
+    newChart('clusterPieChart','doughnut',clusterLabels,
+      [{data:Object.values(sizes),backgroundColor:Object.keys(sizes).map(k=>(personas[k]||{}).color||'#9ca3af'),borderWidth:0}],
+      {plugins:{legend:{position:'bottom'}}});
+    // Investor table
+    const assignments = inv.assignments || [];
+    document.getElementById('investorClusterTable').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Username</th><th>Cluster</th><th>Persona</th></tr></thead>
+        <tbody>${assignments.map(a=>`
+          <tr><td>${a.username}</td><td>${a.cluster}</td>
+          <td><span class="cluster-chip" style="background:${(personas[a.cluster]||{}).color||'#9ca3af'}">${a.persona}</span></td></tr>`).join('')}
+        </tbody></table>`;
+    // Stock cluster scatter
+    const stocks = stk.stocks || [];
+    const colors = ['#2d6a4f','#d4a843','#3b82f6','#ef4444'];
+    const clusterNames = stk.cluster_names || {};
+    const datasets = [0,1,2,3].map(ci=>({
+      label: clusterNames[ci]||`Group ${ci}`,
+      data : stocks.filter(s=>s.cluster===ci).map(s=>({x:s.volatility,y:s.return_1y,label:s.ticker})),
+      backgroundColor: colors[ci],
+      pointRadius: 7,
+    }));
+    newChart('stockClusterChart','scatter','',datasets,
+      {scales:{x:{title:{display:true,text:'Annualised Volatility %'}},y:{title:{display:true,text:'1Y Return %'}}}});
+  } catch(e) { console.error('Clustering:', e); }
+}
+
+// ── RESEARCH ──────────────────────────────────────────────────────────────────
+async function loadResearch() {
+  try {
+    const res  = await fetch(`${API}/esg/correlation`);
+    const data = await res.json();
+    const pts  = data.data_points || [];
+    // ESG vs Return scatter
+    const sectorColors = {'Technology':'#3b82f6','Healthcare':'#22c55e','Clean Energy':'#52b788','Finance':'#f59e0b','Consumer Staples':'#8b5cf6','Utilities':'#06b6d4','Energy':'#ef4444','Industrial':'#f97316'};
+    const bySector = {};
+    pts.forEach(p => { if(!bySector[p.sector])bySector[p.sector]=[]; bySector[p.sector].push(p); });
+    const scatterDatasets = Object.entries(bySector).map(([s,arr])=>({
+      label:s, data:arr.map(p=>({x:p.esg_total,y:p.return_1y})),
+      backgroundColor:(sectorColors[s]||'#9ca3af')+'cc', pointRadius:6,
+    }));
+    newChart('esgReturnScatter','scatter','',scatterDatasets,
+      {scales:{x:{title:{display:true,text:'ESG Score'}},y:{title:{display:true,text:'1Y Return %'}}}});
+    const volDatasets = Object.entries(bySector).map(([s,arr])=>({
+      label:s, data:arr.map(p=>({x:p.esg_total,y:p.volatility})),
+      backgroundColor:(sectorColors[s]||'#9ca3af')+'cc', pointRadius:6,
+    }));
+    newChart('esgVolScatter','scatter','',volDatasets,
+      {scales:{x:{title:{display:true,text:'ESG Score'}},y:{title:{display:true,text:'Volatility %'}}}});
+    // Correlation summary
+    document.getElementById('corrSummary').innerHTML = `
+      <div class="cards-row cards-3" style="margin-top:0.5rem">
+        <div class="card">
+          <div class="card-title">ESG ↔ 1Y Return</div>
+          <div class="card-value ${data.esg_return_corr>0?'pos':'neg'}">${data.esg_return_corr}</div>
+          <div class="card-sub">${data.esg_return_corr>0?'Higher ESG tends to correlate with better returns':'Weak negative correlation'}</div>
+        </div>
+        <div class="card">
+          <div class="card-title">ESG ↔ Volatility</div>
+          <div class="card-value ${data.esg_volatility_corr<0?'pos':'neg'}">${data.esg_volatility_corr}</div>
+          <div class="card-sub">${data.esg_volatility_corr<0?'Higher ESG correlates with lower volatility':'Check sector effects'}</div>
+        </div>
+        <div class="card">
+          <div class="card-title">ESG ↔ Sharpe</div>
+          <div class="card-value ${data.esg_sharpe_corr>0?'pos':'neg'}">${data.esg_sharpe_corr}</div>
+          <div class="card-sub">${data.esg_sharpe_corr>0?'ESG leaders show better risk-adjusted returns':''}</div>
+        </div>
+      </div>`;
+    // Sector heatmap
+    const hmRes = await fetch(`${API}/research/sector_heatmap`);
+    const hm    = await hmRes.json();
+    document.getElementById('sectorHeatmap').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Sector</th><th>ESG Total</th><th>Environmental</th><th>Social</th><th>Governance</th><th>Avg Return</th><th>Avg Sharpe</th></tr></thead>
+        <tbody>${Object.entries(hm).map(([s,d])=>`
+          <tr>
+            <td><strong>${s}</strong></td>
+            <td><div style="display:flex;align-items:center;gap:0.5rem"><div style="width:60px;height:8px;background:#e5e7eb;border-radius:4px"><div style="width:${d.total}%;height:100%;background:var(--moss);border-radius:4px"></div></div>${d.total}</div></td>
+            <td>${d.env}</td><td>${d.soc}</td><td>${d.gov}</td>
+            <td class="${d.avg_return>=0?'pos':'neg'}">${d.avg_return}%</td>
+            <td>${d.avg_sharpe}</td>
+          </tr>`).join('')}
+        </tbody></table>`;
+  } catch(e) { console.error('Research:', e); }
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+const chartInstances = {};
+function newChart(id, type, labels, datasets, extraOptions={}) {
+  if (chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id)?.getContext('2d');
+  if (!ctx) return;
+  chartInstances[id] = new Chart(ctx, {
+    type,
+    data: { labels, datasets },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ font:{ family:'DM Sans',size:11 }, boxWidth:12 } } },
+      ...extraOptions
+    }
+  });
+}
+
+function renderPills(containerId, tickers, arr) {
+  document.getElementById(containerId).innerHTML = arr.map(t=>`
+    <div class="pill">${t}
+      <button onclick="removeTicker('${containerId}','${t}','${arr===portTickers?'port':'opt'}')">✕</button>
+    </div>`).join('');
+}
+
+function removeTicker(containerId, t, type) {
+  if (type === 'port') { portTickers = portTickers.filter(x=>x!==t); renderPills(containerId,portTickers,portTickers); }
+  else { optTickers = optTickers.filter(x=>x!==t); renderPills(containerId,optTickers,optTickers); }
+}
+
+// Load personalized on start
+loadPersonalized();
+
+// ── ML PREDICTIONS ────────────────────────────────────────────────────────────
+// ── ML PREDICTIONS (Fixed with INR & Chart Support) ──────────────────────────
+async function runMLPrediction() {
+  const ticker = document.getElementById('mlTickerSel').value;
+  if (!ticker) return alert('Please select a stock first.');
+  
+  // 1. Show loading state
+  document.getElementById('mlResults').style.display = 'block';
+  const trendEl = document.getElementById('mlTrendSignal');
+  trendEl.innerHTML = '<span class="spinner"></span> Computing...';
+  
+  try {
+    const res = await fetch(`${API}/ml/predict/${ticker}`);
+    const data = await res.json();
+    
+    if (data.error) {
+      trendEl.textContent = "Error";
+      return alert(data.error);
+    }
+
+    // 2. Update Price Cards with INR (Rupee) conversion
+    const currentPriceInr = data.current_price_inr || (data.current_price * 83.5);
+    const predictedPriceInr = data.predicted_price_inr || (data.predicted_price * 83.5);
+
+    document.getElementById('mlCurrentPrice').innerHTML = 
+      `$${data.current_price.toLocaleString()} <br><span style="font-size:1.1rem; color:var(--smoke);">₹${currentPriceInr.toLocaleString('en-IN')}</span>`;
+      
+    document.getElementById('mlPredictedPrice').innerHTML = 
+      `$${data.predicted_price.toLocaleString()} <br><span style="font-size:1.1rem; color:var(--smoke);">₹${predictedPriceInr.toLocaleString('en-IN')}</span>`;
+    
+    // 3. Update Trend Signal
+    trendEl.textContent = data.trend;
+    trendEl.className = data.change_pct > 0 ? 'card-value pos' : 'card-value neg';
+    document.getElementById('mlChangePct').textContent = `Expected Change: ${data.change_pct > 0 ? '+' : ''}${data.change_pct}%`;
+
+    // 4. Render Chart (Historical + Future Prediction)
+    const combinedDates = [...data.historical_dates, ...data.future_dates];
+    const historyData = [...data.historical_prices, ...Array(data.future_dates.length).fill(null)];
+    const futureData = [...Array(data.historical_prices.length - 1).fill(null), 
+                        data.historical_prices[data.historical_prices.length - 1], 
+                        ...data.future_prices];
+
+    newChart('mlForecastChart', 'line', combinedDates, [
+      {
+        label: 'Historical Price (USD)',
+        data: historyData,
+        borderColor: '#0d1117',
+        backgroundColor: '#0d1117',
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHitRadius: 15,
+        borderWidth: 2,
+        tension: 0.1
+      },
+      {
+        label: 'AI Prediction (30 Days)',
+        data: futureData,
+        borderColor: '#d4a843',
+        backgroundColor: '#d4a843',
+        borderDash: [5, 5], 
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHitRadius: 15,
+        borderWidth: 3,
+        tension: 0.1
+      }
+    ], {
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: { ticks: { maxTicksLimit: 15 } },
+        y: { title: { display: true, text: 'Price (USD)' } }
+      }
+    });
+
+  } catch (e) {
+    console.error('ML Prediction Error:', e);
+    trendEl.textContent = "Error";
+    alert('Failed to generate prediction. Check if the backend is running.');
+  }
+}
+// ── SYSTEM UPDATE ─────────────────────────────────────────────────────────────
+async function forceDataRefresh() {
+  const btn = document.getElementById('refreshBtn');
+  btn.textContent = '⏳ Updating System...';
+  btn.disabled = true;
+  
+  try {
+    const res = await fetch(`${API}/admin/force_update`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      alert('Market data updated successfully! The page will now reload to show the latest data.');
+      window.location.reload();
+    }
+  } catch(e) {
+    console.error(e);
+    alert('Failed to update data.');
+  } finally {
+    btn.textContent = '🔄 Refresh Market Data';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
