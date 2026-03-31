@@ -201,8 +201,10 @@ nav.sidebar-nav { padding:1rem 0; flex:1; }
     <div class="nav-item" onclick="showPage('ml')"><span class="icon">🤖</span> ML Predictions</div>
     <div class="nav-item" onclick="showPage('clustering')"><span class="icon">🔮</span> Investor Clustering</div>
     <div class="nav-item" onclick="showPage('research')"><span class="icon">🔬</span> Research Analytics</div>
+    <div class="nav-item" onclick="showPage('macro')"><span class="icon">🌍</span> Global Event AI</div>
     <div class="nav-section">Life Goals</div>
     <div class="nav-item" onclick="showPage('goals')"><span class="icon">🎯</span> Goal-Based AI</div>
+    <div class="nav-item" onclick="showPage('other')"><span class="icon">🏦</span> Fixed Deposits</div>
   </nav>
   <div class="sidebar-footer">
     <div id="sidebarRisk" style="font-size:0.82rem;margin-bottom:0.3rem;"></div>
@@ -709,6 +711,148 @@ nav.sidebar-nav { padding:1rem 0; flex:1; }
     </div>
   </div>
 
+
+  <div class="page" id="page-other">
+    <div class="page-header">
+      <h1>Fixed Deposit (FD) Analyzer</h1>
+      <p>Analyze guaranteed return assets and calculate your real rate of return against inflation.</p>
+    </div>
+
+    <div class="explain-box" style="margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.6; max-width: 900px;">
+      <strong style="font-size: 1.1rem; color:var(--moss);">📖 Guide to Fixed Deposits (FDs)</strong><br><br>
+      A Fixed Deposit allows you to deposit a lump sum of money with a bank for a fixed duration, earning a guaranteed rate of interest. 
+      It is entirely unaffected by stock market crashes. However, the biggest hidden risk to an FD is <strong>Inflation</strong>. If your bank gives you 7% interest, but daily goods get 6% more expensive, your "Real Return" is only 1%. Let the AI analyze your bank's rate below.
+    </div>
+
+    <div class="chart-card" style="background: var(--paper);">
+      <h3>Calculate & Analyze FD</h3>
+      <div class="controls" style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Deposit Amount (₹)</label>
+          <input type="number" class="ctrl-input" id="fdAmount" value="500000" style="width:100%;">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Bank Interest Rate (%)</label>
+          <input type="number" class="ctrl-input" id="fdRate" value="7.1" step="0.1" style="width:100%; border-color:var(--moss);">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Duration (Years)</label>
+          <input type="number" class="ctrl-input" id="fdYears" value="5" style="width:100%;">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--rust);">Current Inflation (%)</label>
+          <input type="number" class="ctrl-input" id="fdInflation" value="6.0" step="0.1" style="width:100%; border-color:var(--rust);">
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button class="ctrl-btn" onclick="calculateFd()" style="height: 40px;">🤖 Analyze ROI</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="fdResultsArea" style="display:none;"></div>
+  </div>
+
+
+  <div class="page" id="page-macro">
+    <div class="page-header">
+      <h1>Global Event Impact Analyzer</h1>
+      <p>Simulate breaking macro-economic events to see how they impact different market sectors and discover which ESG stocks benefit the most.</p>
+    </div>
+
+    
+
+   <div class="cards-row cards-4" style="margin-bottom: 1rem;">
+      <div class="card macro-card" id="card_interest_rate_hike" style="cursor:pointer; border-top: 4px solid #3b82f6;" onclick="analyzeMacroEvent('interest_rate_hike')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏦</div>
+          <div class="live-badge" id="badge_interest_rate_hike" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#3b82f6; font-size:1rem;">Interest Rate Hike</div>
+      </div>
+      
+      <div class="card macro-card" id="card_oil_surge" style="cursor:pointer; border-top: 4px solid #f59e0b;" onclick="analyzeMacroEvent('oil_surge')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛢️</div>
+          <div class="live-badge" id="badge_oil_surge" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#f59e0b; font-size:1rem;">Oil Price Surge</div>
+      </div>
+
+      <div class="card macro-card" id="card_inflation_spike" style="cursor:pointer; border-top: 4px solid #d946ef;" onclick="analyzeMacroEvent('inflation_spike')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">📈</div>
+          <div class="live-badge" id="badge_inflation_spike" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#d946ef; font-size:1rem;">Inflation Spike</div>
+      </div>
+
+      <div class="card macro-card" id="card_ai_boom" style="cursor:pointer; border-top: 4px solid #8b5cf6;" onclick="analyzeMacroEvent('ai_boom')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🤖</div>
+          <div class="live-badge" id="badge_ai_boom" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#8b5cf6; font-size:1rem;">AI Tech Boom</div>
+      </div>
+    </div>
+
+    <div class="cards-row cards-4" style="margin-bottom: 2rem;">
+      <div class="card macro-card" id="card_green_subsidy" style="cursor:pointer; border-top: 4px solid #22c55e;" onclick="analyzeMacroEvent('green_subsidy')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌱</div>
+          <div class="live-badge" id="badge_green_subsidy" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#22c55e; font-size:1rem;">Green Subsidies</div>
+      </div>
+
+      <div class="card macro-card" id="card_global_conflict" style="cursor:pointer; border-top: 4px solid #ef4444;" onclick="analyzeMacroEvent('global_conflict')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚔️</div>
+          <div class="live-badge" id="badge_global_conflict" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#ef4444; font-size:1rem;">Global Conflict</div>
+      </div>
+
+      <div class="card macro-card" id="card_regulation" style="cursor:pointer; border-top: 4px solid #64748b;" onclick="analyzeMacroEvent('regulation')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚖️</div>
+          <div class="live-badge" id="badge_regulation" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#64748b; font-size:1rem;">Regulatory Crackdown</div>
+      </div>
+
+      <div class="card macro-card" id="card_supply_chain" style="cursor:pointer; border-top: 4px solid #d97706;" onclick="analyzeMacroEvent('supply_chain')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚢</div>
+          <div class="live-badge" id="badge_supply_chain" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#d97706; font-size:1rem;">Supply Chain Crisis</div>
+      </div>
+    </div>
+
+    <div id="macroResultsArea" style="display:none;">
+      <div class="chart-card" id="macroVerdictBox" style="background: #fdfaf4; border-left: 4px solid var(--moss);">
+        <h3 id="macroEventTitle" style="display:flex; align-items:center; gap:0.5rem;">🤖 Event Analysis</h3>
+        <p id="macroEventDesc" style="font-size:1.05rem; line-height:1.6; color:var(--ink);"></p>
+        
+        <div style="display:flex; gap: 2rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+          <div style="flex: 1;">
+            <h4 style="color:var(--moss); margin-bottom:0.5rem;">✅ Benefiting Sectors</h4>
+            <div id="macroPosSectors" style="display:flex; gap:0.5rem; flex-wrap:wrap;"></div>
+          </div>
+          <div style="flex: 1;">
+            <h4 style="color:var(--rust); margin-bottom:0.5rem;">⚠️ At-Risk Sectors</h4>
+            <div id="macroNegSectors" style="display:flex; gap:0.5rem; flex-wrap:wrap;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>AI Top Picks for this Environment</h3>
+        <div id="macroStocksTable"></div>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <script>
@@ -746,6 +890,7 @@ function showPage(name) {
     news        : loadNews,
     clustering  : loadClustering,
     research    : loadResearch,
+    macro       : scanLiveNewsForMacro
   };
   if (loaders[name]) loaders[name]();
 }
@@ -1822,6 +1967,130 @@ async function generateGoalPlan() {
     alert('🚨 CONNECTION ERROR: ' + e.message + '\n\nPlease look at your Python Terminal window.');
   } finally {
     btn.textContent = '🪄 Generate AI Strategy';
+  }
+}
+
+// ── FIXED DEPOSITS ────────────────────────────────────────────────────────────
+async function calculateFd() {
+  const btn = document.querySelector('button[onclick="calculateFd()"]');
+  btn.textContent = '⏳ Calculating...';
+
+  const payload = {
+    principal: parseFloat(document.getElementById('fdAmount').value),
+    rate: parseFloat(document.getElementById('fdRate').value),
+    years: parseFloat(document.getElementById('fdYears').value),
+    inflation: parseFloat(document.getElementById('fdInflation').value)
+  };
+
+  try {
+    const res = await fetch(`${API}/investments/fd_analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    document.getElementById('fdResultsArea').style.display = 'block';
+    document.getElementById('fdResultsArea').innerHTML = `
+      <div class="cards-row cards-3" style="margin-top: 1.5rem;">
+        <div class="card"><div class="card-title">Maturity Amount</div><div class="card-value" style="color:var(--moss);">₹${data.maturity.toLocaleString('en-IN')}</div></div>
+        <div class="card"><div class="card-title">Guaranteed Interest</div><div class="card-value pos">+₹${data.interest.toLocaleString('en-IN')}</div></div>
+        <div class="card"><div class="card-title">Real Rate (Post-Inflation)</div><div class="card-value ${data.real_rate > 0 ? 'pos' : 'neg'}">${data.real_rate}%</div></div>
+      </div>
+      <div class="chart-card" style="background: #fdfaf4; border-left: 4px solid var(--moss); margin-top:1.5rem;">
+        <h3 style="display:flex; align-items:center; gap:0.5rem;"><span style="font-size:1.4rem;">🤖</span> AI Asset Analysis</h3>
+        <p style="font-size:1.05rem; line-height:1.6; color:var(--ink);">${data.verdict}</p>
+      </div>
+    `;
+  } catch (e) {
+    alert("Error calculating FD details.");
+  } finally {
+    btn.textContent = '🤖 Analyze ROI';
+  }
+}
+
+// ── GLOBAL MACRO EVENT ANALYZER ───────────────────────────────────────────────
+async function analyzeMacroEvent(eventType) {
+  const resultsArea = document.getElementById('macroResultsArea');
+  resultsArea.style.display = 'block';
+  
+  document.getElementById('macroEventTitle').innerHTML = '<span class="spinner"></span> Analyzing Global Impact...';
+  document.getElementById('macroEventDesc').innerHTML = '';
+  document.getElementById('macroPosSectors').innerHTML = '';
+  document.getElementById('macroNegSectors').innerHTML = '';
+  document.getElementById('macroStocksTable').innerHTML = '<div class="loading">Finding defensive and opportunistic stocks...</div>';
+
+  try {
+    const res = await fetch(`${API}/research/event_impact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_type: eventType })
+    });
+    const data = await res.json();
+    
+    if (!data.success) return alert(data.message);
+
+    const ev = data.event;
+    
+    // Update Header and Colors
+    document.getElementById('macroVerdictBox').style.borderLeftColor = ev.color;
+    document.getElementById('macroEventTitle').innerHTML = ev.name;
+    document.getElementById('macroEventTitle').style.color = ev.color;
+    document.getElementById('macroEventDesc').textContent = ev.desc;
+
+    // Render Sector Tags
+    document.getElementById('macroPosSectors').innerHTML = ev.positive_sectors.map(s => 
+      `<span style="background:#dcfce7; color:#166534; padding:0.3rem 0.8rem; border-radius:6px; font-weight:bold; font-size:0.85rem;">${s}</span>`
+    ).join('');
+    
+    document.getElementById('macroNegSectors').innerHTML = ev.negative_sectors.map(s => 
+      `<span style="background:#fee2e2; color:#991b1b; padding:0.3rem 0.8rem; border-radius:6px; font-weight:bold; font-size:0.85rem;">${s}</span>`
+    ).join('');
+
+    // Render Stock Table
+    if (data.recommendations.length === 0) {
+       document.getElementById('macroStocksTable').innerHTML = '<div class="loading">No highly-ranked ESG stocks found in the benefiting sectors right now.</div>';
+    } else {
+      document.getElementById('macroStocksTable').innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>Asset</th><th>Sector</th><th>1Y Return</th><th>Volatility (Risk)</th><th>ESG Score</th><th>AI Signal</th></tr></thead>
+          <tbody>${data.recommendations.map(r => `
+            <tr>
+              <td><strong>${r.ticker}</strong><br><span style="font-size:0.75rem;color:var(--smoke)">${r.name || ''}</span></td>
+              <td>${r.sector}</td>
+              <td class="${(r.return_1y||0)>=0?'pos':'neg'}">${r.return_1y}%</td>
+              <td>${r.volatility}%</td>
+              <td><span class="badge badge-esg-${(r.esg_rating||'b').toLowerCase()}">${r.esg_rating}</span></td>
+              <td><span class="badge badge-invest">BUY / ACCUMULATE</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+  } catch (e) {
+    console.error(e);
+    document.getElementById('macroEventTitle').innerHTML = '🚨 Error processing event.';
+  }
+}
+
+async function scanLiveNewsForMacro() {
+  try {
+    const res = await fetch(`${API}/research/live_macro_scan`);
+    const data = await res.json();
+    
+    // Hide all badges first
+    document.querySelectorAll('.live-badge').forEach(b => b.style.display = 'none');
+    
+    // Highlight the card that matches today's news!
+    if (data.active_event && data.active_event !== "none") {
+      const badge = document.getElementById('badge_' + data.active_event);
+      if (badge) badge.style.display = 'block';
+      
+      const card = document.getElementById('card_' + data.active_event);
+      if (card) card.style.backgroundColor = '#fef2f2'; // Give it a slight red tint to stand out
+    }
+  } catch (e) {
+    console.error("Failed to scan live news for macro events.");
   }
 }
 

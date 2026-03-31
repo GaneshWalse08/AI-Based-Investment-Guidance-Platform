@@ -426,6 +426,122 @@ def plan_goal():
         import traceback
         print("GOAL PLAN ERROR:", traceback.format_exc())
         return jsonify({'success': False, 'message': f'Server Math Error: {str(e)}'})
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# FIXED DEPOSIT (FD) ANALYZER
+# ════════════════════════════════════════════════════════════════════════════
+@app.route('/api/investments/fd_analyze', methods=['POST'])
+def analyze_fd():
+    data = request.json
+    principal = float(data.get('principal') or 100000)
+    rate = float(data.get('rate') or 7.0)
+    years = float(data.get('years') or 5)
+    inflation = float(data.get('inflation') or 6.0)
+    
+    # Mathematical Formula for Quarterly Compounding FD: A = P(1 + r/n)^(nt)
+    maturity = principal * ((1 + (rate/100)/4) ** (4 * years))
+    interest_earned = maturity - principal
+    
+    # Real Rate of Return = Nominal Rate - Inflation Rate
+    real_rate = rate - inflation
+    
+    verdict = "A Fixed Deposit (FD) guarantees your principal and interest, making it the ultimate zero-risk asset. "
+    if real_rate <= 0:
+        verdict += f"<br><br>However, with inflation at {inflation}%, your <strong>Real Rate of Return is {real_rate:.1f}%</strong>. This means your money is mathematically losing purchasing power over time. <br><br><strong style='color:var(--rust);'>AI Verdict:</strong> Use this FD <em>only</em> for an emergency fund or capital you need within 1-3 years. Do not use this as a long-term wealth creation tool."
+    else:
+        verdict += f"<br><br>With inflation at {inflation}%, your <strong>Real Rate of Return is positive (+{real_rate:.1f}%)</strong>. <br><br><strong style='color:var(--moss);'>AI Verdict:</strong> This is a highly lucrative lock-in rate. It is strongly recommended to secure this FD immediately for the conservative bucket of your asset allocation."
+        
+    return jsonify({
+        'success': True,
+        'maturity': round(maturity),
+        'interest': round(interest_earned),
+        'real_rate': round(real_rate, 2),
+        'verdict': verdict
+    })
+
+# ════════════════════════════════════════════════════════════════════════════
+# GLOBAL MACRO EVENT ANALYZER (UPGRADED)
+# ════════════════════════════════════════════════════════════════════════════
+MACRO_LOGIC = {
+    "interest_rate_hike": {
+        "name": "🏦 Interest Rate Hike",
+        "desc": "Central banks raise rates to fight inflation. Borrowing becomes expensive, cooling down growth-heavy sectors (like Tech), but directly benefiting lenders who can charge higher interest.",
+        "positive_sectors": ["Finance"], "negative_sectors": ["Technology", "Real Estate"], "color": "#3b82f6"
+    },
+    "oil_surge": {
+        "name": "🛢️ Oil Price Surge",
+        "desc": "Geopolitical tensions or OPEC supply cuts drive up crude oil prices. This increases transport costs and inflation, but heavily benefits traditional energy.",
+        "positive_sectors": ["Energy", "Clean Energy"], "negative_sectors": ["Consumer Staples", "Industrial"], "color": "#f59e0b"
+    },
+    "green_subsidy": {
+        "name": "🌱 Massive Green Subsidies",
+        "desc": "Governments announce multi-billion dollar funding for renewable infrastructure, carbon-neutral initiatives, and EV grid expansion.",
+        "positive_sectors": ["Clean Energy", "Utilities"], "negative_sectors": ["Energy"], "color": "#22c55e"
+    },
+    "global_conflict": {
+        "name": "⚔️ Global Conflict",
+        "desc": "Uncertainty and supply chain disruptions drive investors to safe-haven, defensive assets. Highly cyclical and consumer-dependent sectors suffer.",
+        "positive_sectors": ["Healthcare", "Utilities", "Energy"], "negative_sectors": ["Consumer Staples", "Technology"], "color": "#ef4444"
+    },
+    "inflation_spike": {
+        "name": "📈 Inflation Spike",
+        "desc": "The cost of goods rises rapidly. Companies that sell daily essentials (food, toothpaste) can pass costs to consumers, while luxury goods and high-growth tech suffer.",
+        "positive_sectors": ["Consumer Staples", "Healthcare"], "negative_sectors": ["Technology", "Finance"], "color": "#d946ef"
+    },
+    "ai_boom": {
+        "name": "🤖 AI & Tech Boom",
+        "desc": "A major breakthrough in Artificial Intelligence or semiconductor manufacturing triggers massive capital inflow into the technology sector.",
+        "positive_sectors": ["Technology"], "negative_sectors": ["Utilities", "Consumer Staples"], "color": "#8b5cf6"
+    },
+    "regulation": {
+        "name": "⚖️ Regulatory Crackdown",
+        "desc": "Governments announce strict antitrust laws or massive fines on monopolistic sectors (usually Big Tech or Big Pharma), causing investors to flee to safer, unregulated industries.",
+        "positive_sectors": ["Utilities", "Consumer Staples"], "negative_sectors": ["Technology", "Healthcare"], "color": "#64748b"
+    },
+    "supply_chain": {
+        "name": "🚢 Supply Chain Crisis",
+        "desc": "Major shipping routes are blocked or global pandemics halt factory production. Companies relying on complex hardware manufacturing suffer, while local services thrive.",
+        "positive_sectors": ["Finance", "Healthcare"], "negative_sectors": ["Industrial", "Technology"], "color": "#d97706"
+    }
+}
+
+@app.route('/api/research/event_impact', methods=['POST'])
+def event_impact():
+    data = request.json
+    event_type = data.get('event_type')
+    event_info = MACRO_LOGIC.get(event_type)
+    
+    if not event_info:
+        return jsonify({"success": False, "message": "Unknown event type."})
+
+    ranked = ranking_svc.compute_rankings()
+    recommended = [s for s in ranked if s.get('sector') in event_info['positive_sectors']]
+    recommended = sorted(recommended, key=lambda x: -x.get('total_score', 0))[:6]
+
+    return jsonify({"success": True, "event": event_info, "recommendations": recommended})
+
+@app.route('/api/research/live_macro_scan', methods=['GET'])
+def live_macro_scan():
+    """Scans today's live news to figure out which Macro Event is currently happening in the real world."""
+    news = news_svc.get_news()
+    
+    # Combine all headlines to analyze the dominant market theme today
+    combined_text = " ".join([n['headline'].lower() for n in news])
+    
+    active_event = "none"
+    if any(word in combined_text for word in ["rate", "fed", "powell", "hike"]):
+        active_event = "interest_rate_hike"
+    elif any(word in combined_text for word in ["inflation", "cpi", "prices rise"]):
+        active_event = "inflation_spike"
+    elif any(word in combined_text for word in ["ai", "chip", "nvidia", "artificial intelligence"]):
+        active_event = "ai_boom"
+    elif any(word in combined_text for word in ["oil", "crude", "opec", "energy"]):
+        active_event = "oil_surge"
+    elif any(word in combined_text for word in ["war", "missile", "tension", "conflict"]):
+        active_event = "global_conflict"
+
+    return jsonify({"success": True, "active_event": active_event})
 # ════════════════════════════════════════════════════════════════════════════
 # CHATBOT ENDPOINT
 # ════════════════════════════════════════════════════════════════════════════
