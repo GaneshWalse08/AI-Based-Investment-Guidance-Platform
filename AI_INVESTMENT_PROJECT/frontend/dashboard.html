@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — ESGVision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --ink:    #0d1117;
+  --paper:  #f8f5f0;
+  --moss:   #2d6a4f;
+  --sage:   #52b788;
+  --gold:   #d4a843;
+  --rust:   #c0392b;
+  --mist:   #e8f0eb;
+  --smoke:  #6b7280;
+  --border: #d1c9be;
+  --sidebar-w: 240px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); display:flex; min-height:100vh; }
+
+/* SIDEBAR */
+.sidebar { width:var(--sidebar-w); background:#fff; border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; z-index:50; overflow-y:auto; }
+.sidebar-logo { padding:1.5rem 1.5rem 1rem; font-family:'DM Serif Display',serif; font-size:1.3rem; color:var(--moss); border-bottom:1px solid var(--mist); }
+.sidebar-logo span { color:var(--gold); }
+.sidebar-user { padding:1rem 1.5rem; border-bottom:1px solid var(--mist); }
+.user-avatar { width:36px; height:36px; background:var(--moss); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:0.85rem; margin-right:0.5rem; }
+.user-name { font-size:0.85rem; font-weight:600; }
+.user-cluster { font-size:0.72rem; color:var(--smoke); }
+nav.sidebar-nav { padding:1rem 0; flex:1; }
+.nav-section { padding:0.3rem 1.5rem; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--smoke); margin-bottom:0.3rem; margin-top:0.8rem; }
+.nav-item { display:flex; align-items:center; gap:0.75rem; padding:0.65rem 1.5rem; font-size:0.88rem; font-weight:500; color:var(--smoke); cursor:pointer; border-left:3px solid transparent; transition:all .15s; }
+.nav-item:hover { color:var(--moss); background:var(--mist); }
+.nav-item.active { color:var(--moss); background:var(--mist); border-left-color:var(--moss); font-weight:600; }
+.nav-item .icon { font-size:1rem; width:20px; text-align:center; }
+.sidebar-footer { padding:1.2rem 1.5rem; border-top:1px solid var(--mist); font-size:0.8rem; color:var(--smoke); }
+.btn-logout { background:none; border:1px solid var(--border); border-radius:6px; padding:0.4rem 0.8rem; font-size:0.8rem; cursor:pointer; font-family:inherit; color:var(--smoke); width:100%; margin-top:0.5rem; transition:all .2s; }
+.btn-logout:hover { background:var(--rust); color:#fff; border-color:var(--rust); }
+
+/* MAIN */
+.main { margin-left:var(--sidebar-w); flex:1; padding:2rem; min-height:100vh; }
+.page { display:none; }
+.page.active { display:block; }
+.page-header { margin-bottom:1.5rem; }
+.page-header h1 { font-family:'DM Serif Display',serif; font-size:1.8rem; }
+.page-header p { color:var(--smoke); font-size:0.9rem; margin-top:0.2rem; }
+
+/* CARDS */
+.cards-row { display:grid; gap:1rem; margin-bottom:1.5rem; }
+.cards-4 { grid-template-columns:repeat(4,1fr); }
+.cards-3 { grid-template-columns:repeat(3,1fr); }
+.cards-2 { grid-template-columns:repeat(2,1fr); }
+.card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:1.3rem; }
+.card-title { font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--smoke); margin-bottom:0.4rem; font-weight:600; }
+.card-value { font-family:'DM Serif Display',serif; font-size:2rem; }
+.card-sub { font-size:0.8rem; color:var(--smoke); margin-top:0.2rem; }
+.pos { color:#16a34a; } .neg { color:var(--rust); }
+.chart-card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:1.3rem; margin-bottom:1.5rem; }
+.chart-card h3 { font-family:'DM Serif Display',serif; font-size:1.1rem; margin-bottom:1rem; }
+.chart-wrap { position:relative; height:260px; }
+
+/* TABLES */
+.data-table { width:100%; border-collapse:collapse; font-size:0.87rem; }
+.data-table th { text-align:left; padding:0.6rem 0.8rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--smoke); border-bottom:1px solid var(--border); background:var(--paper); font-weight:600; }
+.data-table td { padding:0.65rem 0.8rem; border-bottom:1px solid var(--mist); }
+.data-table tr:hover td { background:var(--mist); }
+.badge { display:inline-flex; align-items:center; padding:0.2rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:700; }
+.badge-invest  { background:#dcfce7; color:#166534; }
+.badge-hold    { background:#fef9c3; color:#854d0e; }
+.badge-avoid   { background:#fee2e2; color:#991b1b; }
+.badge-esg-aaa { background:#d1fae5; color:#065f46; }
+.badge-esg-aa  { background:#e0f2fe; color:#075985; }
+.badge-esg-a   { background:#ede9fe; color:#4c1d95; }
+.badge-esg-bbb { background:#fef3c7; color:#92400e; }
+.badge-esg-bb  { background:#ffedd5; color:#c2410c; }
+.badge-esg-b   { background:#fee2e2; color:#991b1b; }
+
+/* CONTROLS */
+.controls { display:flex; gap:1rem; margin-bottom:1.2rem; flex-wrap:wrap; align-items:center; }
+.ctrl-select, .ctrl-input { padding:0.5rem 0.8rem; border:1.5px solid var(--border); border-radius:8px; font-size:0.88rem; font-family:inherit; background:#fff; }
+.ctrl-select:focus, .ctrl-input:focus { outline:none; border-color:var(--moss); }
+.ctrl-btn { background:var(--moss); color:#fff; padding:0.5rem 1.2rem; border-radius:8px; border:none; font-size:0.88rem; font-weight:600; cursor:pointer; font-family:inherit; transition:background .2s; }
+.ctrl-btn:hover { background:#1e4d38; }
+.ctrl-btn.outline { background:transparent; color:var(--moss); border:2px solid var(--moss); }
+.ctrl-btn.outline:hover { background:var(--mist); }
+
+/* PORTFOLIO BUILDER */
+.ticker-pills { display:flex; flex-wrap:wrap; gap:0.5rem; margin:1rem 0; min-height:40px; }
+.pill { background:var(--moss); color:#fff; padding:0.3rem 0.8rem; border-radius:20px; font-size:0.82rem; display:flex; align-items:center; gap:0.4rem; }
+.pill button { background:none; border:none; color:#fff; cursor:pointer; font-size:1rem; line-height:1; }
+
+/* SENTIMENT */
+.sentiment-bar { height:12px; border-radius:6px; background:#e5e7eb; overflow:hidden; margin:0.4rem 0; }
+.sentiment-fill { height:100%; border-radius:6px; transition:width 0.6s; }
+.fill-pos { background:var(--sage); }
+.fill-neg { background:var(--rust); }
+.fill-neu { background:var(--gold); }
+
+/* NEWS */
+.news-item { padding:0.8rem 0; border-bottom:1px solid var(--mist); }
+.news-item:last-child { border:none; }
+.news-headline { font-size:0.9rem; font-weight:500; margin-bottom:0.3rem; line-height:1.4; }
+.news-meta { display:flex; gap:0.8rem; font-size:0.75rem; color:var(--smoke); align-items:center; }
+.news-sentiment { padding:0.15rem 0.5rem; border-radius:10px; font-size:0.72rem; font-weight:700; }
+.s-positive { background:#dcfce7; color:#166534; }
+.s-negative { background:#fee2e2; color:#991b1b; }
+.s-neutral  { background:#f3f4f6; color:#6b7280; }
+
+/* CLUSTER CHIPS */
+.cluster-chip { display:inline-block; padding:0.4rem 1rem; border-radius:20px; font-size:0.82rem; font-weight:600; color:#fff; margin:0.2rem; }
+
+/* ESG GAUGE */
+.esg-ring-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; }
+.esg-ring { text-align:center; }
+.esg-ring svg { display:block; margin:0 auto; }
+.esg-ring-label { font-size:0.8rem; color:var(--smoke); margin-top:0.3rem; }
+.esg-ring-val { font-family:'DM Serif Display',serif; font-size:1.1rem; }
+
+/* LOADING */
+.loading { text-align:center; padding:3rem; color:var(--smoke); font-size:0.9rem; }
+.spinner { display:inline-block; width:24px; height:24px; border:3px solid var(--border); border-top-color:var(--moss); border-radius:50%; animation:spin 0.8s linear infinite; margin-right:0.5rem; vertical-align:middle; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* EXPLANATION BOX */
+.explain-box { background:var(--mist); border-left:3px solid var(--moss); border-radius:0 8px 8px 0; padding:0.75rem 1rem; font-size:0.85rem; color:#1a3d2b; margin-top:0.3rem; }
+
+/* SEARCH */
+.search-wrap { position:relative; }
+.search-wrap input { padding-left:2.2rem; }
+.search-wrap::before { content:'🔍'; position:absolute; left:0.7rem; top:50%; transform:translateY(-50%); font-size:0.85rem; }
+
+/* RESPONSIVE helpers */
+@media(max-width:900px) { .cards-4,.cards-3 { grid-template-columns:1fr 1fr; } }
+
+/* ── CHAT WIDGET ── */
+.chat-widget { position: fixed; bottom: 25px; right: 25px; z-index: 1000; }
+.chat-btn { background: var(--moss); color: #fff; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 1.5rem; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.2); transition: transform 0.2s; display: flex; align-items: center; justify-content: center; }
+.chat-btn:hover { transform: scale(1.05); }
+.chat-window { display: none; position: absolute; bottom: 80px; right: 0; width: 360px; background: #fff; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); border: 1px solid var(--border); overflow: hidden; flex-direction: column; }
+.chat-header { background: var(--moss); color: #fff; padding: 1rem 1.2rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+.chat-close { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.2rem; }
+.chat-body { height: 380px; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.8rem; background: var(--paper); }
+.msg { padding: 0.6rem 1rem; border-radius: 12px; max-width: 85%; font-size: 0.9rem; line-height: 1.5; }
+.msg.user { background: var(--moss); color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+.msg.bot { background: #fff; color: var(--ink); border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 2px; }
+.chat-input-area { display: flex; padding: 0.8rem; background: #fff; border-top: 1px solid var(--mist); }
+.chat-input-area input { flex: 1; padding: 0.7rem; border: 1px solid var(--border); border-radius: 8px; outline: none; font-family: inherit; }
+.chat-input-area input:focus { border-color: var(--moss); }
+.chat-input-area button { background: var(--moss); color: #fff; border: none; padding: 0 1.2rem; margin-left: 0.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+.chat-input-area button:hover { background: #1e4d38; }
+.typing-indicator { font-style: italic; color: var(--smoke); font-size: 0.85rem; padding: 0 0.5rem; }
+
+/* PORTFOLIO MODAL CSS */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; }
+.modal-overlay.active { display:flex; }
+.modal { background:#fff; border-radius:16px; padding:2rem; width:100%; max-width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.15); position:relative; }
+.modal h2 { font-family:'DM Serif Display',serif; font-size:1.5rem; margin-bottom:0.2rem; }
+.modal-close { position:absolute; top:1rem; right:1.2rem; background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--smoke); }
+.port-list-item { padding:1rem; border:1px solid var(--border); border-radius:8px; margin-bottom:0.8rem; cursor:pointer; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center; }
+.port-list-item:hover { border-color:var(--moss); background:var(--mist); }
+
+.cluster-chip { 
+    display: inline-flex; 
+    align-items: center;
+    padding: 0.35rem 0.8rem; 
+    border-radius: 20px; 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    color: #fff; 
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* ── ACADEMY STYLES ── */
+.academy-step-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin: 2rem 0; }
+.step-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 1.8rem 1.5rem; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: transform 0.2s; }
+.step-card:hover { transform: translateY(-3px); }
+.step-number { position: absolute; top: -16px; left: 1.5rem; background: var(--moss); color: #fff; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; font-size: 1rem; border: 3px solid var(--paper); box-shadow: 0 2px 6px rgba(45,106,79,0.3); }
+.step-card h4 { color: var(--moss); margin-bottom: 0.5rem; font-size: 1.1rem; }
+.step-card p { font-size: 0.9rem; color: var(--smoke); line-height: 1.6; }
+
+.glossary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; margin-top: 1rem; }
+.glossary-term { background: #fff; border-left: 4px solid var(--sage); padding: 1.2rem; border-radius: 0 8px 8px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.glossary-term h4 { margin-bottom: 0.4rem; color: var(--ink); font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+.glossary-term p { font-size: 0.85rem; color: var(--smoke); line-height: 1.5; margin: 0; }
+
+.highlight-box { background: var(--mist); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; display: flex; gap: 1.5rem; align-items: center; border: 1px solid #d1e3da; }
+.highlight-icon { font-size: 2.5rem; background: #fff; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.05); flex-shrink: 0; }
+.highlight-text h4 { color: var(--moss); margin-bottom: 0.3rem; font-size: 1.1rem; }
+.highlight-text p { color: #1a3d2b; font-size: 0.95rem; line-height: 1.5; margin: 0; }
+
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">ESG<span>Vision</span></div>
+  <div class="sidebar-user">
+    <span class="user-avatar" id="avatarInitial">?</span>
+    <span class="user-name" id="sidebarUsername">Loading…</span>
+    <div class="user-cluster" id="sidebarCluster">—</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Learning</div>
+    <div class="nav-item" onclick="showPage('academy')"><span class="icon">📚</span> Academy</div>
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showPage('dashboard')"><span class="icon">🏠</span> Dashboard</div>
+    <div class="nav-item" onclick="showPage('news')"><span class="icon">📰</span> Market News</div>
+    <div class="nav-section">Stocks</div>
+    <div class="nav-item" onclick="showPage('rankings')"><span class="icon">📊</span> ESG Rankings</div>
+    <div class="nav-item" onclick="showPage('personalized')"><span class="icon">🎯</span> My Recommendations</div>
+    <div class="nav-section">Portfolio</div>
+    <div class="nav-item" onclick="showPage('portfolio')"><span class="icon">💼</span> Portfolio Builder</div>
+    <div class="nav-item" onclick="showPage('optimizer')"><span class="icon">⚗️</span> Optimizer</div>
+    <div class="nav-section">Analytics</div>
+    <div class="nav-item" onclick="showPage('ml')"><span class="icon">🤖</span> ML Predictions</div>
+    <div class="nav-item" onclick="showPage('clustering')"><span class="icon">🔮</span> Investor Clustering</div>
+    <div class="nav-item" onclick="showPage('research')"><span class="icon">🔬</span> Research Analytics</div>
+    <div class="nav-item" onclick="showPage('macro')"><span class="icon">🌍</span> Global Event AI</div>
+    <div class="nav-section">Life Goals</div>
+    <div class="nav-item" onclick="showPage('goals')"><span class="icon">🎯</span> Goal-Based AI</div>
+    <div class="nav-item" onclick="showPage('other')"><span class="icon">🏦</span> Fixed Deposits</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div id="sidebarRisk" style="font-size:0.82rem;margin-bottom:0.3rem;"></div>
+    
+    <button class="btn-logout" style="margin-bottom:0.5rem; color:var(--moss); border-color:var(--moss);" onclick="forceDataRefresh()" id="refreshBtn">
+      🔄 Refresh Market Data
+    </button>
+    
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- ═══════════ DASHBOARD ═══════════ -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <h1>Good morning, <span id="welcomeName">Investor</span> 👋</h1>
+      <p>Here's your sustainable investment intelligence briefing for today.</p>
+    </div>
+    <div class="cards-row cards-4" id="overviewCards">
+      <div class="card"><div class="card-title">Market Mood</div><div class="card-value" id="mktMood">—</div><div class="card-sub" id="mktChange">—</div></div>
+      <div class="card"><div class="card-title">Fear &amp; Greed</div><div class="card-value" id="fearGreed">—</div><div class="card-sub">Market Sentiment Index</div></div>
+      <div class="card"><div class="card-title">Top ESG Score</div><div class="card-value" id="topEsg">—</div><div class="card-sub" id="topEsgName">—</div></div>
+      <div class="card"><div class="card-title">Stocks Tracked</div><div class="card-value" id="trackedCount">...</div><div class="card-sub" id="sectorCount">...</div></div>
+    </div>
+    <div class="cards-row cards-2">
+      <div class="chart-card">
+        <h3>Top 5 ESG Ranked Stocks</h3>
+        <div class="chart-wrap"><canvas id="topEsgChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Sector ESG vs Return Comparison</h3>
+        <div class="chart-wrap"><canvas id="sectorChart"></canvas></div>
+      </div>
+    </div>
+    <div class="cards-row cards-2">
+      <div class="chart-card" style="border-top: 4px solid var(--sage);">
+        <h3 style="display:flex; align-items:center; gap:0.5rem;">
+          <span style="font-size:1.2rem;">🚀</span> Today's Top 10 Gainers
+        </h3>
+        <div id="dashGainers">
+          <div class="loading"><span class="spinner"></span>Analyzing market movers…</div>
+        </div>
+      </div>
+      
+      <div class="chart-card" style="border-top: 4px solid var(--rust);">
+        <h3 style="display:flex; align-items:center; gap:0.5rem;">
+          <span style="font-size:1.2rem;">🔻</span> Today's Top 10 Losers
+        </h3>
+        <div id="dashLosers">
+          <div class="loading"><span class="spinner"></span>Analyzing market movers…</div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>📰 Latest Market News</h3>
+      <div id="dashNews"><div class="loading"><span class="spinner"></span>Loading news…</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ NEWS ═══════════ -->
+  <div class="page" id="page-news">
+    <div class="page-header">
+      <h1>Market News &amp; Sentiment</h1>
+      <p>AI-analyzed financial headlines with sentiment scoring.</p>
+      
+      <div class="explain-box" style="margin-top: 1rem; max-width: 850px;">
+        <strong style="font-size: 0.95rem;">🧠 How this works:</strong> Our AI (Natural Language Processing) reads live headlines and scores them from -1.0 to +1.0.<br>
+        <div style="margin-top: 0.4rem; display: flex; gap: 1.5rem; flex-wrap: wrap;">
+          <span>🟢 <strong>Positive:</strong> Score > 0.1</span>
+          <span>🔴 <strong>Negative:</strong> Score < -0.1</span>
+          <span>🟡 <strong>Neutral:</strong> Between -0.1 and 0.1</span>
+        </div>
+        <div style="margin-top: 0.4rem;">
+          <strong>Fear & Greed Index:</strong> Scales the overall market mood from 0 (Extreme Fear / Selling) to 100 (Extreme Greed / Buying). 50 is perfectly neutral.
+        </div>
+      </div>
+
+    </div>
+    <div class="cards-row cards-4" id="sentimentCards">
+      <div class="card"><div class="card-title">Overall Sentiment</div><div class="card-value" id="sentMood">—</div></div>
+      <div class="card"><div class="card-title">Positive Articles</div><div class="card-value pos" id="sentPos">—</div></div>
+      <div class="card"><div class="card-title">Negative Articles</div><div class="card-value neg" id="sentNeg">—</div></div>
+      <div class="card"><div class="card-title">Fear &amp; Greed Index</div><div class="card-value" id="sentFG">—</div></div>
+    </div>
+
+    <div class="chart-card" style="background: #fdfaf4; border-left: 4px solid var(--gold);">
+      <h3 style="display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-size:1.4rem;">🤖</span> AI Market Verdict & Analysis
+      </h3>
+      <div id="aiMarketVerdict" style="font-size:0.95rem; line-height:1.7; color:var(--ink);">
+        <div class="loading"><span class="spinner"></span>Synthesizing market data...</div>
+      </div>
+    </div>
+
+    <div class="cards-row cards-2">
+      <div class="chart-card">
+        <h3>Sentiment by Category</h3>
+        <div class="chart-wrap"><canvas id="sentCatChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Article Distribution</h3>
+        <div class="chart-wrap"><canvas id="sentDistChart"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>All Headlines</h3>
+      <div id="allNews"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ RANKINGS ═══════════ -->
+  <div class="page" id="page-rankings">
+    <div class="page-header"><h1>ESG-Aware Stock Rankings</h1><p>Combined financial performance and ESG sustainability scoring.</p></div>
+    <div class="controls">
+      <select class="ctrl-select" id="rankSector" onchange="loadRankings()">
+        <option value="all">All Sectors</option>
+        <option value="Technology">Technology</option>
+        <option value="Healthcare">Healthcare</option>
+        <option value="Clean Energy">Clean Energy</option>
+        <option value="Finance">Finance</option>
+        <option value="Consumer Staples">Consumer Staples</option>
+        <option value="Utilities">Utilities</option>
+        <option value="Energy">Energy</option>
+        <option value="Industrial">Industrial</option>
+      </select>
+      <label style="font-size:0.88rem;font-weight:600;">ESG Weight:
+        <input type="range" id="esgWeight" min="0" max="0.8" step="0.1" value="0.4" oninput="document.getElementById('esgWeightVal').textContent=Math.round(this.value*100)+'%'; loadRankings();">
+        <span id="esgWeightVal">40%</span>
+      </label>
+    </div>
+    <div class="chart-card">
+      <div id="rankingsTable"><div class="loading"><span class="spinner"></span>Loading rankings…</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PERSONALIZED ═══════════ -->
+  <div class="page" id="page-personalized">
+    <div class="page-header"><h1>My Personalized Recommendations</h1><p>Filtered for your risk tolerance, budget, and sector preferences.</p></div>
+    <div class="controls" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; background: #fff; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+      
+      <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">1. Time Horizon
+        <select class="ctrl-select" id="perDuration" style="width:100%; margin-top:0.3rem;">
+          <option value="< 1 year">&lt; 1 year (Short Term)</option>
+          <option value="1-3 years" selected>1-3 years (Medium Term)</option>
+          <option value="5+ years">5+ years (Long Term)</option>
+        </select>
+      </label>
+
+      <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">2. Total Budget (₹ INR)
+        <input type="number" class="ctrl-input" id="perBudget" value="100000" style="width:100%; margin-top:0.3rem;">
+      </label>
+
+      <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">3. Risk Tolerance
+        <select class="ctrl-select" id="perRisk" style="width:100%; margin-top:0.3rem;">
+          <option value="low">Low Risk (Stable)</option>
+          <option value="moderate" selected>Medium Risk</option>
+          <option value="high">High Risk (Aggressive)</option>
+        </select>
+      </label>
+
+      <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">4. Company Size
+        <select class="ctrl-select" id="perCap" style="width:100%; margin-top:0.3rem;">
+          <option value="all">All Sizes</option>
+          <option value="large">Large Cap (&gt; $100B)</option>
+          <option value="mid">Mid Cap ($10B - $100B)</option>
+          <option value="small">Small Cap (&lt; $10B)</option>
+        </select>
+      </label>
+
+      <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">5. Target Sector
+        <select class="ctrl-select" id="perSector" style="width:100%; margin-top:0.3rem;">
+          <option value="">All Sectors</option>
+          <option value="Technology">Technology</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Clean Energy">Clean Energy</option>
+          <option value="Finance">Finance</option>
+          <option value="Consumer Staples">Consumer Staples</option>
+          <option value="Utilities">Utilities</option>
+          <option value="Energy">Energy</option>
+          <option value="Industrial">Industrial</option>
+        </select>
+      </label>
+
+      <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">6. ESG Priority
+        <select class="ctrl-select" id="perEsg" style="width:100%; margin-top:0.3rem;">
+          <option value="low">Low Priority</option>
+          <option value="medium" selected>Medium Priority</option>
+          <option value="high">High Priority</option>
+          <option value="very_high">Very High (Strict)</option>
+        </select>
+      </label>
+      
+      <div style="grid-column: span 3; text-align: right; margin-top: 0.5rem;">
+        <button class="ctrl-btn" onclick="loadPersonalized()" style="padding: 0.7rem 2rem; font-size: 1rem;">🔍 Analyze & Recommend</button>
+      </div>
+    </div>
+
+    <div id="perStats" class="cards-row cards-3" style="margin-bottom:1.2rem;"></div>
+    <div class="chart-card">
+      <div id="personalizedTable"><div class="loading"><span class="spinner"></span>Awaiting inputs...</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PORTFOLIO BUILDER ═══════════ -->
+   <div class="page" id="page-portfolio">
+    <div class="page-header">
+      <h1>Model Portfolio Analyzer</h1>
+      <p>Build a theoretical ESG portfolio to analyze expected returns, risk, and sustainability scores.</p>
+    </div>
+
+    <div class="cards-row cards-3">
+      <div class="card"><div class="card-title">Total Model Value</div><div class="card-value" id="portValue">₹0.00</div></div>
+      <div class="card"><div class="card-title">Expected 1Y Return</div><div class="card-value" id="portReturn">0.00%</div><div class="card-sub">Weighted historical average</div></div>
+      <div class="card"><div class="card-title">Overall ESG Score</div><div class="card-value" id="portEsg" style="color:var(--moss);">0.0</div><div class="card-sub">Portfolio sustainability</div></div>
+    </div>
+
+    <div class="cards-row cards-2">
+      
+      <div class="chart-card">
+        <h3><span style="font-size:1.2rem;">⚡</span> Add Asset to Model</h3>
+        <div style="display:flex; flex-direction:column; gap:1rem; margin-top:1rem;">
+          <div>
+            <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">1. Select Asset</label>
+            <select class="ctrl-select" id="tradeTicker" style="width:100%; margin-top:0.3rem;">
+              </select>
+          </div>
+          <div>
+            <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">2. Quantity (Shares)</label>
+            <input type="number" class="ctrl-input" id="tradeShares" value="1" step="0.01" min="0.01" style="width:100%; margin-top:0.3rem;">
+          </div>
+          <div style="display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap;">
+            <button class="ctrl-btn" style="flex:1; min-width:100px; background:var(--moss);" onclick="addAssetToModel()">+ Add</button>
+            <button class="ctrl-btn" style="flex:1; min-width:100px; background:var(--rust);" onclick="clearModelPortfolio()">✕ Clear</button>
+            <button class="ctrl-btn" style="flex:1; min-width:100px; background:var(--gold); color:var(--ink);" onclick="saveModelPortfolio()">💾 Save</button>
+            <button class="ctrl-btn outline" style="flex:1; min-width:100px;" onclick="loadModelPortfolio()">📂 Load</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Asset Allocation</h3>
+        <div class="chart-wrap" style="height:250px;">
+          <canvas id="portfolioPieChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card" id="portfolioVerdictCard" style="display:none; background: #fdfaf4; border-left: 4px solid var(--moss);">
+      <h3 style="display:flex; align-items:center; gap:0.5rem;"><span style="font-size:1.4rem;">🤖</span> AI Portfolio Verdict</h3>
+      <p id="portVerdictText" style="font-size:0.95rem; line-height:1.6; color:var(--ink); margin-bottom: 1.5rem;"></p>
+      
+      <div style="background: #fff; padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+        <label style="font-size:0.85rem; font-weight:600; color:var(--smoke);">Hypothetical Investment Amount (₹)</label>
+        <div style="display:flex; gap: 1rem; margin-top: 0.5rem; align-items:center;">
+          <input type="number" class="ctrl-input" id="projInvestment" value="100000" step="10000" style="width:200px; font-size:1.1rem; font-weight:bold;">
+          <button class="ctrl-btn" onclick="updateProjections()">Calculate Returns</button>
+        </div>
+        
+        <div class="cards-row cards-3" style="margin-top: 1.5rem; margin-bottom: 0;">
+          <div class="card"><div class="card-title">1 Year Projection</div><div class="card-value" id="proj1Y" style="color:var(--moss);">₹0</div></div>
+          <div class="card"><div class="card-title">3 Year Projection</div><div class="card-value" id="proj3Y" style="color:var(--moss);">₹0</div></div>
+          <div class="card"><div class="card-title">5 Year Projection</div><div class="card-value" id="proj5Y" style="color:var(--moss);">₹0</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Model Holdings</h3>
+      <div id="portfolioTableContainer"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ OPTIMIZER ═══════════ -->
+  <div class="page" id="page-optimizer">
+    <div class="page-header">
+      <h1>Portfolio Optimizer & AI Rebalancing</h1>
+      <p>Select a saved portfolio to get step-by-step instructions on how to rebalance it.</p>
+    </div>
+    
+    <div class="chart-card" style="background: var(--paper);">
+      <h3>Select Portfolio to Optimize</h3>
+      <div class="controls" style="margin-top: 1rem;">
+        <select class="ctrl-select" id="optSavedPortfolioSel" style="min-width:250px;">
+          <option value="">Loading your portfolios...</option>
+        </select>
+        <select class="ctrl-select" id="optGoal">
+          <option value="sharpe">Goal: Maximize Sharpe</option>
+          <option value="min_vol">Goal: Minimize Volatility</option>
+          <option value="max_ret">Goal: Maximize Return</option>
+        </select>
+        <button class="ctrl-btn" onclick="optimizeSavedPortfolio()">⚗️ Run AI Rebalance</button>
+      </div>
+    </div>
+
+    <div class="chart-card" id="optVerdictCard" style="display:none; background: #fdfaf4; border-left: 4px solid var(--moss);">
+      <h3 style="display:flex; align-items:center; gap:0.5rem;"><span style="font-size:1.4rem;">🤖</span> AI Rebalancing Verdict</h3>
+      <p id="optVerdictText" style="font-size:0.95rem; line-height:1.6; color:var(--ink); margin-bottom: 1.5rem;"></p>
+      
+      <div id="optComparisonTableContainer"></div>
+    </div>
+
+    <div id="optResults" style="display:none">
+      <div class="cards-row cards-3" id="optMetricCards"></div>
+      <div class="cards-row cards-2">
+        <div class="chart-card"><h3>Optimal Allocation</h3><div class="chart-wrap"><canvas id="optPieChart"></canvas></div></div>
+        <div class="chart-card"><h3>Efficient Frontier</h3><div class="chart-wrap"><canvas id="frontierChart"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ CLUSTERING ═══════════ -->
+  <div class="page" id="page-clustering">
+    <div class="page-header"><h1>Investor Clustering</h1><p>KMeans behavioral segmentation of investor profiles.</p></div>
+    <div class="cards-row cards-2">
+      <div class="chart-card"><h3>Investor Personas</h3><div id="personasBox"></div></div>
+      <div class="chart-card"><h3>Cluster Distribution</h3><div class="chart-wrap"><canvas id="clusterPieChart"></canvas></div></div>
+    </div>
+    <div class="chart-card">
+      <h3>Stock Clustering — Financial &amp; ESG Groups</h3>
+      <div class="chart-wrap" style="height:300px;"><canvas id="stockClusterChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Investor Assignments</h3>
+      <div id="investorClusterTable"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ RESEARCH ═══════════ -->
+  <div class="page" id="page-research">
+    <div class="page-header"><h1>Research Analytics</h1><p>Academic-grade correlation analysis and ESG-financial relationships.</p></div>
+    <div class="cards-row cards-2">
+      <div class="chart-card"><h3>ESG Score vs 1Y Return</h3><div class="chart-wrap"><canvas id="esgReturnScatter"></canvas></div></div>
+      <div class="chart-card"><h3>ESG Score vs Volatility</h3><div class="chart-wrap"><canvas id="esgVolScatter"></canvas></div></div>
+    </div>
+    <div class="chart-card">
+      <h3>Sector ESG Heatmap</h3>
+      <div id="sectorHeatmap"></div>
+    </div>
+    <div class="chart-card" id="corrCard">
+      <h3>ESG-Financial Correlation Summary</h3>
+      <div id="corrSummary"></div>
+    </div>
+  </div>
+
+
+  <div class="page" id="page-ml">
+    <div class="page-header">
+      <h1>Machine Learning Price Prediction</h1>
+      <p>Auto-regressive AI model trained on live historical data to forecast 30-day trends.</p>
+    </div>
+    
+    <div class="chart-card">
+      <h3>Select Asset for AI Analysis</h3>
+      <div class="controls">
+        <select class="ctrl-select" id="mlTickerSel" style="min-width:180px;">
+          <option value="">Choose a stock…</option>
+        </select>
+        <button class="ctrl-btn" onclick="runMLPrediction()">🤖 Run Prediction</button>
+      </div>
+    </div>
+
+    <div id="mlResults" style="display:none">
+      <div class="cards-row cards-3">
+        <div class="card"><div class="card-title">Current Price</div><div class="card-value" id="mlCurrentPrice">—</div></div>
+        <div class="card"><div class="card-title">Predicted Price (30 Days)</div><div class="card-value" id="mlPredictedPrice">—</div></div>
+        <div class="card"><div class="card-title">AI Trend Signal</div><div class="card-value" id="mlTrendSignal">—</div><div class="card-sub" id="mlChangePct">—</div></div>
+      </div>
+      
+      <div class="chart-card">
+        <h3>30-Day Forecast vs Historical Price</h3>
+        <div class="chart-wrap" style="height: 400px;">
+          <canvas id="mlForecastChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-widget">
+  <button class="chat-btn" onclick="toggleChat()">💬</button>
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <span>🤖 ESGVision AI</span>
+      <button class="chat-close" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div class="msg bot">Hello! I am your AI Investment Assistant. Ask me anything about the market, ESG, or specific stocks!</div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" placeholder="Ask a question..." onkeypress="if(event.key==='Enter')sendMessage()">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="loadPortfolioModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeLoadModal()">✕</button>
+    <h2>Saved Portfolios</h2>
+    <p style="color:var(--smoke); font-size:0.9rem; margin-bottom:1.5rem;">Select a portfolio to analyze</p>
+    <div id="portfolioList" style="max-height: 300px; overflow-y: auto;">
+      </div>
+  </div>
+</div>
+
+<div class="page" id="page-goals">
+    <div class="page-header">
+      <h1>Goal-Based AI Investing</h1>
+      <p>Tell the AI what you are saving for, and it will build the perfect 6-stock portfolio to get you there.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:var(--moss);" onclick="setGoalData('🚗 Buy a Car', 800000, 3)" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚗</div>
+        <div class="card-title" style="color:var(--moss);">Buy a Car</div>
+        <div class="card-sub">Goal: ₹8L in 3 Years</div>
+      </div>
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:#3b82f6;" onclick="setGoalData('🎓 Higher Studies', 1500000, 5)" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎓</div>
+        <div class="card-title" style="color:#3b82f6;">Higher Studies</div>
+        <div class="card-sub">Goal: ₹15L in 5 Years</div>
+      </div>
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:#8b5cf6;" onclick="setGoalData('💍 Dream Wedding', 1200000, 4)" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💍</div>
+        <div class="card-title" style="color:#8b5cf6;">Dream Wedding</div>
+        <div class="card-sub">Goal: ₹12L in 4 Years</div>
+      </div>
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:#f59e0b;" onclick="setGoalData('🏡 House Downpayment', 2500000, 7)" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏡</div>
+        <div class="card-title" style="color:#f59e0b;">House Deposit</div>
+        <div class="card-sub">Goal: ₹25L in 7 Years</div>
+      </div>
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:#06b6d4;" onclick="setGoalData('✈️ World Tour', 500000, 2)" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">✈️</div>
+        <div class="card-title" style="color:#06b6d4;">World Tour</div>
+        <div class="card-sub">Goal: ₹5L in 2 Years</div>
+      </div>
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:var(--gold);" onclick="setGoalData('💼 Retirement', 10000000, 15)" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💼</div>
+        <div class="card-title" style="color:var(--gold);">Retirement</div>
+        <div class="card-sub">Goal: ₹1Cr in 15 Years</div>
+      </div>
+      <div class="card" style="cursor:pointer; transition:transform 0.2s; border-color:var(--border); background:var(--paper); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;" onclick="setGoalData('', '', '')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='none'">
+        <div style="font-size: 1.5rem; margin-bottom: 0.5rem; color:var(--smoke);">➕</div>
+        <div class="card-title" style="color:var(--smoke); margin:0;">Custom Goal</div>
+        <div class="card-sub">Enter your own</div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="background: var(--paper);">
+      <h3>Define Your Goal</h3>
+      <div class="controls" style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Goal Name</label>
+          <input type="text" class="ctrl-input" id="goalName" value="💼 Retirement" style="width:100%;">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Target (₹)</label>
+          <input type="number" class="ctrl-input" id="goalTarget" value="10000000" style="width:100%;">
+        </div>
+        <div style="flex:1; min-width:100px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Years</label>
+          <input type="number" class="ctrl-input" id="goalYears" value="15" style="width:100%;">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Start Amt (₹)</label>
+          <input type="number" class="ctrl-input" id="goalInitial" value="200000" style="width:100%;">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--moss);">Monthly SIP (₹)</label>
+          <input type="number" class="ctrl-input" id="goalMonthly" value="25000" style="width:100%; border-color:var(--moss);">
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button class="ctrl-btn" onclick="generateGoalPlan()" style="height: 40px;">🪄 Generate AI Strategy</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="goalResultsArea" style="display:none;">
+      
+      <div class="chart-card" style="background: #fdfaf4; border-left: 4px solid var(--moss);">
+        <h3 style="display:flex; align-items:center; gap:0.5rem;"><span style="font-size:1.4rem;">🤖</span> AI Strategy Verdict</h3>
+        <p id="goalVerdictText" style="font-size:1.05rem; line-height:1.6; color:var(--ink);"></p>
+      </div>
+
+      <div class="cards-row cards-3">
+        <div class="card"><div class="card-title">Initial Investment</div><div class="card-value" id="resInitialInvest">—</div></div>
+        <div class="card"><div class="card-title">Expected Annual Return</div><div class="card-value pos" id="resExpRet">—</div></div>
+        <div class="card"><div class="card-title">Selected AI Strategy</div><div class="card-value" id="resStrategy" style="font-size: 1.1rem; margin-top:0.5rem; color:var(--moss);">—</div></div>
+      </div>
+
+      <div class="cards-row cards-2">
+        <div class="chart-card">
+          <h3>The 6-Stock AI Portfolio</h3>
+          <div id="goalPortfolioTable"></div>
+        </div>
+        <div class="chart-card">
+          <h3>Target Asset Allocation</h3>
+          <div class="chart-wrap"><canvas id="goalAllocationChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="page" id="page-other">
+    <div class="page-header">
+      <h1>Fixed Deposit (FD) Analyzer</h1>
+      <p>Analyze guaranteed return assets and calculate your real rate of return against inflation.</p>
+    </div>
+
+    <div class="explain-box" style="margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.6; max-width: 900px;">
+      <strong style="font-size: 1.1rem; color:var(--moss);">📖 Guide to Fixed Deposits (FDs)</strong><br><br>
+      A Fixed Deposit allows you to deposit a lump sum of money with a bank for a fixed duration, earning a guaranteed rate of interest. 
+      It is entirely unaffected by stock market crashes. However, the biggest hidden risk to an FD is <strong>Inflation</strong>. If your bank gives you 7% interest, but daily goods get 6% more expensive, your "Real Return" is only 1%. Let the AI analyze your bank's rate below.
+    </div>
+
+    <div class="chart-card" style="background: var(--paper);">
+      <h3>Calculate & Analyze FD</h3>
+      <div class="controls" style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Deposit Amount (₹)</label>
+          <input type="number" class="ctrl-input" id="fdAmount" value="500000" style="width:100%;">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Bank Interest Rate (%)</label>
+          <input type="number" class="ctrl-input" id="fdRate" value="7.1" step="0.1" style="width:100%; border-color:var(--moss);">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Duration (Years)</label>
+          <input type="number" class="ctrl-input" id="fdYears" value="5" style="width:100%;">
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:0.8rem; font-weight:bold; color:var(--rust);">Current Inflation (%)</label>
+          <input type="number" class="ctrl-input" id="fdInflation" value="6.0" step="0.1" style="width:100%; border-color:var(--rust);">
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button class="ctrl-btn" onclick="calculateFd()" style="height: 40px;">🤖 Analyze ROI</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="fdResultsArea" style="display:none;"></div>
+  </div>
+
+
+  <div class="page" id="page-macro">
+    <div class="page-header">
+      <h1>Global Event Impact Analyzer</h1>
+      <p>Simulate breaking macro-economic events to see how they impact different market sectors and discover which ESG stocks benefit the most.</p>
+    </div>
+
+    
+
+   <div class="cards-row cards-4" style="margin-bottom: 1rem;">
+      <div class="card macro-card" id="card_interest_rate_hike" style="cursor:pointer; border-top: 4px solid #3b82f6;" onclick="analyzeMacroEvent('interest_rate_hike')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏦</div>
+          <div class="live-badge" id="badge_interest_rate_hike" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#3b82f6; font-size:1rem;">Interest Rate Hike</div>
+      </div>
+      
+      <div class="card macro-card" id="card_oil_surge" style="cursor:pointer; border-top: 4px solid #f59e0b;" onclick="analyzeMacroEvent('oil_surge')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛢️</div>
+          <div class="live-badge" id="badge_oil_surge" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#f59e0b; font-size:1rem;">Oil Price Surge</div>
+      </div>
+
+      <div class="card macro-card" id="card_inflation_spike" style="cursor:pointer; border-top: 4px solid #d946ef;" onclick="analyzeMacroEvent('inflation_spike')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">📈</div>
+          <div class="live-badge" id="badge_inflation_spike" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#d946ef; font-size:1rem;">Inflation Spike</div>
+      </div>
+
+      <div class="card macro-card" id="card_ai_boom" style="cursor:pointer; border-top: 4px solid #8b5cf6;" onclick="analyzeMacroEvent('ai_boom')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🤖</div>
+          <div class="live-badge" id="badge_ai_boom" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#8b5cf6; font-size:1rem;">AI Tech Boom</div>
+      </div>
+    </div>
+
+    <div class="cards-row cards-4" style="margin-bottom: 2rem;">
+      <div class="card macro-card" id="card_green_subsidy" style="cursor:pointer; border-top: 4px solid #22c55e;" onclick="analyzeMacroEvent('green_subsidy')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌱</div>
+          <div class="live-badge" id="badge_green_subsidy" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#22c55e; font-size:1rem;">Green Subsidies</div>
+      </div>
+
+      <div class="card macro-card" id="card_global_conflict" style="cursor:pointer; border-top: 4px solid #ef4444;" onclick="analyzeMacroEvent('global_conflict')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚔️</div>
+          <div class="live-badge" id="badge_global_conflict" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#ef4444; font-size:1rem;">Global Conflict</div>
+      </div>
+
+      <div class="card macro-card" id="card_regulation" style="cursor:pointer; border-top: 4px solid #64748b;" onclick="analyzeMacroEvent('regulation')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚖️</div>
+          <div class="live-badge" id="badge_regulation" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#64748b; font-size:1rem;">Regulatory Crackdown</div>
+      </div>
+
+      <div class="card macro-card" id="card_supply_chain" style="cursor:pointer; border-top: 4px solid #d97706;" onclick="analyzeMacroEvent('supply_chain')">
+        <div style="display:flex; justify-content:space-between;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚢</div>
+          <div class="live-badge" id="badge_supply_chain" style="display:none; color:#ef4444; font-weight:bold; font-size:0.75rem; animation: pulse 2s infinite;">🔴 LIVE IN NEWS</div>
+        </div>
+        <div class="card-title" style="color:#d97706; font-size:1rem;">Supply Chain Crisis</div>
+      </div>
+    </div>
+
+    <div id="macroResultsArea" style="display:none;">
+      <div class="chart-card" id="macroVerdictBox" style="background: #fdfaf4; border-left: 4px solid var(--moss);">
+        <h3 id="macroEventTitle" style="display:flex; align-items:center; gap:0.5rem;">🤖 Event Analysis</h3>
+        <p id="macroEventDesc" style="font-size:1.05rem; line-height:1.6; color:var(--ink);"></p>
+        
+        <div style="display:flex; gap: 2rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+          <div style="flex: 1;">
+            <h4 style="color:var(--moss); margin-bottom:0.5rem;">✅ Benefiting Sectors</h4>
+            <div id="macroPosSectors" style="display:flex; gap:0.5rem; flex-wrap:wrap;"></div>
+          </div>
+          <div style="flex: 1;">
+            <h4 style="color:var(--rust); margin-bottom:0.5rem;">⚠️ At-Risk Sectors</h4>
+            <div id="macroNegSectors" style="display:flex; gap:0.5rem; flex-wrap:wrap;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>AI Top Picks for this Environment</h3>
+        <div id="macroStocksTable"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-academy">
+    <div class="page-header">
+      <h1>Academy — Investment Fundamentals</h1>
+      <p>Master the stock market, understand ESG principles, and learn how to build long-term wealth.</p>
+    </div>
+
+    <div class="chart-card" style="background: var(--paper); border: none;">
+      <h3 style="color:var(--moss); font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>🏗️</span> Module 1: How the Stock Market Works
+      </h3>
+      
+      <div class="highlight-box">
+        <div class="highlight-icon">🏦</div>
+        <div class="highlight-text">
+          <h4>The Core Concept</h4>
+          <p>The stock market is simply a digital marketplace. Instead of buying vegetables or clothes, buyers and sellers come together to trade <strong>ownership stakes</strong> (called shares) in real-world businesses.</p>
+        </div>
+      </div>
+
+      <h4 style="margin-top: 2rem; color: var(--ink); font-size: 1.2rem; text-align: center;">🍋 The Lemonade Stand Analogy</h4>
+      <div class="academy-step-grid">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h4>The Idea & Funding</h4>
+          <p>You want to open a lemonade stand, which costs ₹1,000 to start. You only have ₹500. You ask a friend to invest the remaining ₹500. You issue <strong>10 total shares</strong> of your business. You take 5, your friend gets 5.</p>
+        </div>
+        
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h4>Dividends (Profit Sharing)</h4>
+          <p>At the end of the month, the stand makes ₹200 in pure profit. Because your friend owns 50% of the shares, they are entitled to ₹100. When companies pay out profits to shareholders, this is called a <strong>Dividend</strong>.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h4>Capital Appreciation</h4>
+          <p>Your stand becomes famous! Someone offers to buy the whole business for ₹10,000. Your friend's original ₹500 investment (their 5 shares) is now worth ₹5,000. This increase in the value of the stock is <strong>Capital Appreciation</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards-row cards-2">
+      <div class="chart-card" style="border-top: 4px solid var(--sage); box-shadow: 0 8px 24px rgba(82,183,136,0.1);">
+        <h3 style="font-size: 1.3rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span>🌱</span> Investing (Wealth Creation)
+        </h3>
+        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.95rem; color: var(--smoke);">
+          <li style="display: flex; gap: 0.5rem;"><span>✔️</span> <strong>Focus:</strong> Buying quality businesses and holding them for years.</li>
+          <li style="display: flex; gap: 0.5rem;"><span>✔️</span> <strong>Strategy:</strong> Fundamental analysis (revenue, ESG score, debt).</li>
+          <li style="display: flex; gap: 0.5rem;"><span>✔️</span> <strong>Goal:</strong> Gradual wealth generation through compound interest.</li>
+          <li style="display: flex; gap: 0.5rem;"><span>✔️</span> <strong>Stress Level:</strong> Low. You don't need to check prices every day.</li>
+        </ul>
+      </div>
+
+      <div class="chart-card" style="border-top: 4px solid var(--rust); box-shadow: 0 8px 24px rgba(192,57,43,0.08);">
+        <h3 style="font-size: 1.3rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+          <span>⚡</span> Trading (Speculation)
+        </h3>
+        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.95rem; color: var(--smoke);">
+          <li style="display: flex; gap: 0.5rem;"><span>⚠️</span> <strong>Focus:</strong> Buying and selling rapidly (often same-day).</li>
+          <li style="display: flex; gap: 0.5rem;"><span>⚠️</span> <strong>Strategy:</strong> Technical analysis (charts, momentum, patterns).</li>
+          <li style="display: flex; gap: 0.5rem;"><span>⚠️</span> <strong>Goal:</strong> Quick profits based on market psychology.</li>
+          <li style="display: flex; gap: 0.5rem;"><span>⚠️</span> <strong>Stress Level:</strong> High. Requires constant monitoring of screens.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 style="color:var(--moss); font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+        <span>✨</span> Module 2: The Magic of Compounding
+      </h3>
+      
+      <div style="background: var(--paper); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border);">
+        <p style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem; color: var(--smoke);">
+          Compounding happens when the returns you earn on your investment start earning returns themselves. Run the simulator below to see how time is your greatest asset.
+        </p>
+
+        <div class="controls" style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; background: #fff; padding: 1rem; border-radius: 8px;">
+          <div style="flex:1; min-width:140px;">
+            <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Initial Investment (₹)</label>
+            <input type="number" class="ctrl-input" id="acadInitial" value="50000" style="width:100%;">
+          </div>
+          <div style="flex:1; min-width:140px;">
+            <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Monthly SIP (₹)</label>
+            <input type="number" class="ctrl-input" id="acadMonthly" value="5000" style="width:100%;">
+          </div>
+          <div style="flex:1; min-width:140px;">
+            <label style="font-size:0.8rem; font-weight:bold; color:var(--moss);">Annual Return (%)</label>
+            <input type="number" class="ctrl-input" id="acadRate" value="12" style="width:100%; border-color:var(--moss);">
+          </div>
+          <div style="flex:1; min-width:140px;">
+            <label style="font-size:0.8rem; font-weight:bold; color:var(--smoke);">Years</label>
+            <input type="number" class="ctrl-input" id="acadYears" value="15" style="width:100%;">
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button class="ctrl-btn" onclick="calculateAcademyCompounding()" style="height: 40px; width: 100%;">Calculate</button>
+          </div>
+        </div>
+
+        <div class="cards-row cards-3" id="acadResults" style="display:none; margin-bottom: 0;">
+          <div class="card"><div class="card-title">Total Cash Invested</div><div class="card-value" id="acadTotalInvested" style="font-size: 1.5rem;">₹0</div></div>
+          <div class="card"><div class="card-title">Wealth Generated (Interest)</div><div class="card-value pos" id="acadTotalGained" style="font-size: 1.5rem;">₹0</div></div>
+          <div class="card"><div class="card-title">Final Portfolio Value</div><div class="card-value" id="acadFinalValue" style="color:var(--moss); font-size: 1.5rem;">₹0</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="background: #fdfaf4; border-left: 4px solid var(--gold);">
+      <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem; color: #92400e;">📖 Essential Market Glossary</h3>
+      <p style="font-size: 0.9rem; color: var(--smoke);">The vocabulary you need to navigate financial reports and news.</p>
+      
+      <div class="glossary-grid">
+        <div class="glossary-term">
+          <h4><span>🏢</span> Market Cap</h4>
+          <p>The total value of a company. Calculated by multiplying the current share price by the total number of outstanding shares.</p>
+        </div>
+        <div class="glossary-term" style="border-left-color: #3b82f6;">
+          <h4><span>🐂</span> Bull Market</h4>
+          <p>A financial market where prices are rising or are expected to rise. General optimism and buying is high.</p>
+        </div>
+        <div class="glossary-term" style="border-left-color: #ef4444;">
+          <h4><span>🐻</span> Bear Market</h4>
+          <p>A market condition where prices are falling, usually by 20% or more from recent highs. Pessimism drives selling.</p>
+        </div>
+        <div class="glossary-term" style="border-left-color: #8b5cf6;">
+          <h4><span>⚖️</span> P/E Ratio</h4>
+          <p>Price-to-Earnings. A valuation metric comparing a company's current share price to its per-share earnings.</p>
+        </div>
+        <div class="glossary-term" style="border-left-color: #f59e0b;">
+          <h4><span>📈</span> Volatility</h4>
+          <p>A measure of price swings. High volatility means the price moves wildly; low volatility means it is stable.</p>
+        </div>
+        <div class="glossary-term" style="border-left-color: var(--moss);">
+          <h4><span>🌍</span> ESG Score</h4>
+          <p>Evaluating Environmental, Social, and Governance factors alongside financial data to determine sustainability.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 style="color:var(--moss); font-size: 1.4rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;">
+        <span>🎬</span> Module 3: Visual Learning Library
+      </h3>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        
+        <div style="border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; transition: box-shadow 0.2s;">
+          <iframe width="100%" height="220" src="https://www.youtube.com/embed/p7HKvqRI_Bo" title="How The Economic Machine Works" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <div style="padding: 1.2rem;">
+            <h4 style="margin-bottom: 0.5rem; font-size: 1.05rem;">How The Economic Machine Works</h4>
+            <p style="font-size: 0.85rem; color: var(--smoke); margin: 0; line-height: 1.5;">By Ray Dalio. A masterful, animated breakdown of credit, interest rates, and economic cycles.</p>
+          </div>
+        </div>
+
+        <div style="border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; transition: box-shadow 0.2s;">
+          <iframe width="100%" height="220" src="https://www.youtube.com/embed/ZCFkWDdmXG8" title="Stock Market For Beginners" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          <div style="padding: 1.2rem;">
+            <h4 style="margin-bottom: 0.5rem; font-size: 1.05rem;">The Stock Market Explained</h4>
+            <p style="font-size: 0.85rem; color: var(--smoke); margin: 0; line-height: 1.5;">A simple, visual breakdown of what stocks are, how trading works, and why companies go public.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API = 'http://localhost:5000/api';
+const sels = ['portTickerSel','optTickerSel', 'mlTickerSel'];
+let user = JSON.parse(localStorage.getItem('esg_user') || 'null');
+let portTickers = [];
+let optTickers  = [];
+let allStocks   = [];
+
+// ── INIT ────────────────────────────────────────────────────────────────────
+if (!user) { window.location.href = 'index.html'; }
+else {
+  document.getElementById('welcomeName').textContent = user.username;
+  document.getElementById('sidebarUsername').textContent = user.username;
+  document.getElementById('avatarInitial').textContent = user.username[0].toUpperCase();
+  const risk = user.preferences?.risk_tolerance || 'moderate';
+  document.getElementById('sidebarRisk').textContent = `Risk: ${risk.charAt(0).toUpperCase()+risk.slice(1)}`;
+  document.getElementById('perRisk').value = risk;
+  document.getElementById('perEsg').value  = user.preferences?.esg_priority || 'medium';
+  initDashboard();
+  loadStockList();
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  const loaders = {
+    portfolio   : loadPortfolio,
+    rankings    : loadRankings,
+    personalized: loadPersonalized,
+    news        : loadNews,
+    clustering  : loadClustering,
+    research    : loadResearch,
+    macro       : scanLiveNewsForMacro
+  };
+  if (loaders[name]) loaders[name]();
+}
+
+function logout() {
+  localStorage.removeItem('esg_user');
+  window.location.href = 'index.html';
+}
+
+// ── STOCK LIST ───────────────────────────────────────────────────────────────
+// ── STOCK LIST ───────────────────────────────────────────────────────────────
+async function loadStockList() {
+  try {
+    const res = await fetch(`${API}/stocks`);
+    allStocks = await res.json();
+    
+    // ADDED 'mlTickerSel' TO THIS ARRAY! 👇
+    const sels = ['portTickerSel', 'optTickerSel', 'mlTickerSel']; 
+    
+    sels.forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return; // Safety check in case a page hasn't loaded
+      sel.innerHTML = '<option value="">Choose a stock…</option>';
+      allStocks.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.ticker;
+        o.textContent = `${s.ticker} — ${s.name}`;
+        sel.appendChild(o);
+      });
+    });
+  } catch(e) { console.error('Stock list:', e); }
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────────
+async function initDashboard() {
+  try {
+    const res  = await fetch(`${API}/dashboard/summary`);
+    const data = await res.json();
+    
+    // Overview cards
+    const mo = data.market_overview;
+    document.getElementById('trackedCount').textContent = mo.total_stocks;
+    document.getElementById('sectorCount').textContent = mo.sectors.length + " sectors covered";
+    document.getElementById('mktMood').textContent   = mo.market_mood;
+    document.getElementById('mktChange').textContent = `Avg change: ${mo.avg_market_change}%`;
+    document.getElementById('fearGreed').textContent = data.sentiment.fear_greed_index;
+    const topEsgItem = data.top_esg[0];
+    document.getElementById('topEsg').textContent    = topEsgItem.total;
+    document.getElementById('topEsgName').textContent= `${topEsgItem.ticker} (${topEsgItem.rating})`;
+    
+    // ESG bar chart
+    const labels = data.top_ranked.map(r => r.ticker);
+    const scores = data.top_ranked.map(r => r.total_score);
+    const esgScores = data.top_ranked.map(r => r.esg_total);
+    newChart('topEsgChart','bar',labels,
+      [{label:'Total Score',data:scores,backgroundColor:'#2d6a4f99',borderColor:'#2d6a4f',borderWidth:2},
+       {label:'ESG Score', data:esgScores,backgroundColor:'#52b78899',borderColor:'#52b788',borderWidth:2}],
+      {scales:{y:{min:0,max:100}}});
+      
+    // Sector chart
+    const sectorRes = await fetch(`${API}/research/sector_heatmap`); 
+    const sectors   = await sectorRes.json();
+    const sKeys = Object.keys(sectors);
+    newChart('sectorChart','radar',sKeys,
+      [
+        {label:'ESG Total',data:sKeys.map(s=>sectors[s].total),backgroundColor:'#2d6a4f33',borderColor:'#2d6a4f',borderWidth:2,pointBackgroundColor:'#2d6a4f'},
+        {label:'Live 1Y Return (%)',data:sKeys.map(s=>sectors[s].avg_return),backgroundColor:'#d4a84333',borderColor:'#d4a843',borderWidth:2,pointBackgroundColor:'#d4a843'}
+      ],
+      {scales:{r:{ticks:{stepSize:20}}}}); 
+      
+    // 🚀 NEW: Render Top Gainers Table
+    const gainersHTML = data.top_gainers.map(s => `
+      <tr>
+        <td><strong>${s.ticker}</strong><br><span style="font-size:0.7rem; color:var(--smoke);">${s.name.substring(0, 15)}</span></td>
+        <td style="font-weight:600;">₹${(s.price * 83.5).toLocaleString('en-IN', {maximumFractionDigits: 2})}</td>
+        <td class="pos" style="font-weight:700;">+${s.change_pct}%</td>
+      </tr>
+    `).join('');
+    
+    document.getElementById('dashGainers').innerHTML = `
+      <table class="data-table" style="margin-top:0.5rem;">
+        <thead><tr><th>Asset</th><th>Current Price (₹)</th><th>Daily Change</th></tr></thead>
+        <tbody>${gainersHTML}</tbody>
+      </table>`;
+
+    // 🔻 NEW: Render Top Losers Table
+    const losersHTML = data.top_losers.map(s => `
+      <tr>
+        <td><strong>${s.ticker}</strong><br><span style="font-size:0.7rem; color:var(--smoke);">${s.name.substring(0, 15)}</span></td>
+        <td style="font-weight:600;">₹${(s.price * 83.5).toLocaleString('en-IN', {maximumFractionDigits: 2})}</td>
+        <td class="neg" style="font-weight:700;">${s.change_pct}%</td>
+      </tr>
+    `).join('');
+    
+    document.getElementById('dashLosers').innerHTML = `
+      <table class="data-table" style="margin-top:0.5rem;">
+        <thead><tr><th>Asset</th><th>Current Price (₹)</th><th>Daily Change</th></tr></thead>
+        <tbody>${losersHTML}</tbody>
+      </table>`;
+
+    // News
+    renderNewsItems('dashNews', data.recent_news.slice(0,6));
+    
+  } catch(e) { console.error('Dashboard Error:', e); }
+}
+
+// ── NEWS ─────────────────────────────────────────────────────────────────────
+async function loadNews() {
+  try {
+    const [newsRes, sentRes] = await Promise.all([
+      fetch(`${API}/news`), fetch(`${API}/news/sentiment`)
+    ]);
+    const news = await newsRes.json();
+    const sent = await sentRes.json();
+    document.getElementById('sentMood').textContent = sent.market_mood;
+    document.getElementById('sentPos').textContent  = sent.positive_count;
+    document.getElementById('sentNeg').textContent  = sent.negative_count;
+    document.getElementById('sentFG').textContent   = sent.fear_greed_index;
+    document.getElementById('aiMarketVerdict').innerHTML = sent.market_verdict;
+    // Category chart
+    const cats = Object.keys(sent.category_sentiment);
+    const vals = cats.map(c => sent.category_sentiment[c]);
+    newChart('sentCatChart','bar',cats,
+      [{label:'Avg Sentiment',data:vals,
+        backgroundColor:vals.map(v=>v>0.1?'#52b788aa':v<-0.1?'#c0392baa':'#d4a843aa'),
+        borderColor:vals.map(v=>v>0.1?'#2d6a4f':v<-0.1?'#991b1b':'#92400e'),borderWidth:2}],{});
+    // Distribution donut
+    newChart('sentDistChart','doughnut',['Positive','Neutral','Negative'],
+      [{data:[sent.positive_count,sent.neutral_count,sent.negative_count],
+        backgroundColor:['#52b788','#d4a843','#c0392b'],borderWidth:0}],
+      {plugins:{legend:{position:'bottom'}}});
+    renderNewsItems('allNews', news);
+  } catch(e) { console.error('News:', e); }
+}
+
+function renderNewsItems(containerId, news) {
+  const container = document.getElementById(containerId);
+  if (!news || !news.length) { container.innerHTML = '<div class="loading">No news available.</div>'; return; }
+  container.innerHTML = news.map(n => `
+    <div class="news-item">
+      <div class="news-headline">${n.headline}</div>
+      <div class="news-meta">
+        <span class="news-sentiment ${n.sentiment_label==='Positive'?'s-positive':n.sentiment_label==='Negative'?'s-negative':'s-neutral'}">${n.sentiment_label} ${n.sentiment_pct}%</span>
+        <span>${n.source}</span>
+        <span>${n.category}</span>
+        ${n.ticker ? `<span><strong>${n.ticker}</strong></span>` : ''}
+        <span>${n.timestamp}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── RANKINGS ─────────────────────────────────────────────────────────────────
+async function loadRankings() {
+  document.getElementById('rankingsTable').innerHTML = '<div class="loading"><span class="spinner"></span>Computing…</div>';
+  try {
+    const sector = document.getElementById('rankSector').value;
+    const weight = document.getElementById('esgWeight').value;
+    const res  = await fetch(`${API}/rankings?sector=${sector}&esg_weight=${weight}`);
+    const data = await res.json();
+    document.getElementById('rankingsTable').innerHTML = `
+      <table class="data-table">
+        <thead><tr>
+          <th>#</th><th>Ticker</th><th>Sector</th>
+          <th>1Y Return</th><th>Volatility</th><th>Sharpe</th>
+          <th>ESG Score</th><th>ESG Rating</th><th>Total Score</th><th>Signal</th><th>Reasoning</th>
+        </tr></thead>
+        <tbody>${data.map(r=>`
+          <tr>
+            <td><strong>${r.rank}</strong></td>
+            <td><strong>${r.ticker}</strong></td>
+            <td><span style="font-size:0.8rem;color:var(--smoke)">${r.sector}</span></td>
+            <td class="${r.return_1y>=0?'pos':'neg'}">${r.return_1y}%</td>
+            <td>${r.volatility}%</td>
+            <td>${r.sharpe}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:0.5rem">
+                <div style="flex:1;height:6px;background:#e5e7eb;border-radius:3px"><div style="width:${r.esg_total}%;height:100%;background:var(--sage);border-radius:3px"></div></div>
+                ${r.esg_total}
+              </div>
+            </td>
+            <td><span class="badge badge-esg-${r.esg_rating.toLowerCase()}">${r.esg_rating}</span></td>
+            <td><strong>${r.total_score}</strong></td>
+            <td><span class="badge badge-${r.classification.toLowerCase()}">${r.classification}</span></td>
+            <td><div class="explain-box" style="max-width:280px;font-size:0.78rem">${r.explanation}</div></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) { document.getElementById('rankingsTable').innerHTML = '<div class="loading">Error loading rankings.</div>'; }
+}
+
+// ── PERSONALIZED ──────────────────────────────────────────────────────────────
+// ── PERSONALIZED ──────────────────────────────────────────────────────────────
+async function loadPersonalized() {
+  document.getElementById('personalizedTable').innerHTML = '<div class="loading"><span class="spinner"></span>Analyzing Market...</div>';
+  try {
+    const sector = document.getElementById('perSector').value;
+    const body = {
+      duration      : document.getElementById('perDuration').value,
+      budget        : document.getElementById('perBudget').value,
+      risk_tolerance: document.getElementById('perRisk').value,
+      cap_size      : document.getElementById('perCap').value,
+      sectors       : sector ? [sector] : [],
+      esg_priority  : document.getElementById('perEsg').value,
+    };
+    
+    const res  = await fetch(`${API}/rankings/personalized`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const data = await res.json();
+    
+    document.getElementById('perStats').innerHTML = `
+      <div class="card"><div class="card-title">Assets Analyzed</div><div class="card-value">${data.total_candidates}</div></div>
+      <div class="card"><div class="card-title">Perfect Matches</div><div class="card-value pos">${data.filtered_count}</div></div>
+      <div class="card"><div class="card-title">Max Allowed Volatility</div><div class="card-value" style="color:var(--rust);">${data.applied_filters.max_volatility}%</div><div class="card-sub">Adjusted for ${data.applied_filters.investment_duration} horizon</div></div>`;
+      
+    const recs = data.recommendations;
+    if (!recs.length) { document.getElementById('personalizedTable').innerHTML = '<div class="loading">No stocks match these exact filters. Try loosening your risk or size criteria.</div>'; return; }
+    
+    document.getElementById('personalizedTable').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>#</th><th>Asset</th><th>Size (Cap)</th><th>Live Price (₹)</th><th>Suggested Buy (10%)</th><th>1Y Return</th><th>ESG</th><th>AI Signal</th></tr></thead>
+        <tbody>${recs.map((r,i)=>`
+          <tr>
+            <td>${i+1}</td>
+            <td><strong>${r.ticker}</strong><br><span style="font-size:0.75rem;color:var(--smoke)">${r.sector}</span></td>
+            <td>$${r.market_cap}B</td>
+            <td><strong>₹${r.price_inr.toLocaleString('en-IN')}</strong></td>
+            <td style="color:var(--moss); font-weight:600;">${r.suggested_shares} Shares</td>
+            <td class="${r.return_1y>=0?'pos':'neg'}">${r.return_1y}%</td>
+            <td>${r.esg_total} <span class="badge badge-esg-${r.esg_rating.toLowerCase()}">${r.esg_rating}</span></td>
+            <td><span class="badge badge-${r.classification.toLowerCase()}">${r.classification}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch(e) { 
+      console.error(e);
+      document.getElementById('personalizedTable').innerHTML = '<div class="loading">Error generating recommendations.</div>'; 
+  }
+}
+
+// ── PORTFOLIO ─────────────────────────────────────────────────────────────────
+function addToPortfolio() {
+  const sel = document.getElementById('portTickerSel');
+  const t = sel.value; if (!t || portTickers.includes(t)) return;
+  portTickers.push(t);
+  renderPills('portPills', portTickers, portTickers);
+}
+function clearPortfolio() { portTickers = []; document.getElementById('portPills').innerHTML = ''; document.getElementById('portResults').style.display='none'; }
+
+async function simulatePortfolio() {
+  if (portTickers.length < 1) return alert('Add at least 1 stock');
+  try {
+    const res  = await fetch(`${API}/portfolio/simulate`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tickers:portTickers})});
+    const data = await res.json();
+    document.getElementById('portResults').style.display='block';
+    const bm = data.vs_benchmark;
+    document.getElementById('portMetricCards').innerHTML = `
+      <div class="card"><div class="card-title">Portfolio Return</div><div class="card-value ${data.portfolio_return>=0?'pos':'neg'}">${data.portfolio_return}%</div><div class="card-sub">vs S&P: ${bm.return_alpha>=0?'+':''}${bm.return_alpha}%</div></div>
+      <div class="card"><div class="card-title">Volatility</div><div class="card-value">${data.portfolio_vol}%</div><div class="card-sub">Benchmark: ${bm.sp500_vol}%</div></div>
+      <div class="card"><div class="card-title">Sharpe Ratio</div><div class="card-value">${data.portfolio_sharpe}</div></div>
+      <div class="card"><div class="card-title">ESG Score</div><div class="card-value" style="color:var(--moss)">${data.portfolio_esg}</div><div class="card-sub">Diversification: ${data.diversification_score}%</div></div>`;
+    // Pie
+    const comp = data.composition;
+    newChart('portPieChart','doughnut',comp.map(c=>c.ticker),
+      [{data:comp.map(c=>c.weight),backgroundColor:['#2d6a4f','#52b788','#d4a843','#3b82f6','#8b5cf6','#ef4444','#f97316','#06b6d4'].slice(0,comp.length),borderWidth:0}],
+      {plugins:{legend:{position:'right'}}});
+    // Bar comparison
+    newChart('portBarChart','bar',['Portfolio','S&P 500'],
+      [{label:'Return %',data:[data.portfolio_return, bm.sp500_return],backgroundColor:['#2d6a4f','#9ca3af'],borderRadius:6},
+       {label:'Volatility %',data:[data.portfolio_vol, bm.sp500_vol],backgroundColor:['#52b788','#d1d5db'],borderRadius:6}],{});
+    // Table
+    document.getElementById('portCompositionTable').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Ticker</th><th>Weight</th><th>1Y Return</th><th>Volatility</th><th>Sharpe</th><th>ESG</th><th>Rating</th></tr></thead>
+        <tbody>${comp.map(c=>`
+          <tr><td><strong>${c.ticker}</strong></td><td>${c.weight}%</td>
+          <td class="${c.return_1y>=0?'pos':'neg'}">${c.return_1y}%</td>
+          <td>${c.volatility}%</td><td>${c.sharpe}</td>
+          <td>${c.esg_total}</td>
+          <td><span class="badge badge-esg-${c.esg_rating.toLowerCase()}">${c.esg_rating}</span></td></tr>`).join('')}
+        </tbody></table>`;
+  } catch(e) { console.error('Portfolio sim:', e); }
+}
+
+// ── OPTIMIZER ─────────────────────────────────────────────────────────────────
+function addToOpt() {
+  const sel = document.getElementById('optTickerSel');
+  const t = sel.value; if (!t || optTickers.includes(t)) return;
+  optTickers.push(t);
+  renderPills('optPills', optTickers, optTickers);
+}
+function clearOpt() { optTickers=[]; document.getElementById('optPills').innerHTML=''; document.getElementById('optResults').style.display='none'; }
+
+async function runOptimizer() {
+  if (optTickers.length < 2) return alert('Add at least 2 stocks');
+  const goal = document.getElementById('optGoal').value;
+  try {
+    const [optRes, frontRes] = await Promise.all([
+      fetch(`${API}/portfolio/optimize`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tickers:optTickers,goal})}),
+      fetch(`${API}/portfolio/efficient_frontier`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tickers:optTickers})})
+    ]);
+    const opt   = await optRes.json();
+    const front = await frontRes.json();
+    document.getElementById('optResults').style.display='block';
+    document.getElementById('optMetricCards').innerHTML = `
+      <div class="card"><div class="card-title">Expected Return</div><div class="card-value pos">${opt.expected_return}%</div></div>
+      <div class="card"><div class="card-title">Expected Volatility</div><div class="card-value">${opt.expected_vol}%</div></div>
+      <div class="card"><div class="card-title">Sharpe Ratio</div><div class="card-value">${opt.sharpe_ratio}</div><div class="card-sub">Optimization: ${opt.goal}</div></div>`;
+    newChart('optPieChart','doughnut',opt.allocation.map(a=>a.ticker),
+      [{data:opt.allocation.map(a=>a.weight),backgroundColor:['#2d6a4f','#52b788','#d4a843','#3b82f6','#8b5cf6','#ef4444','#f97316','#06b6d4'].slice(0,opt.allocation.length),borderWidth:0}],
+      {plugins:{legend:{position:'right'}}});
+    // Efficient frontier scatter
+    const fp = front.frontier || [];
+    const is = front.individual_stocks || [];
+    newChart('frontierChart','scatter','',
+      [{label:'Efficient Frontier',data:fp.map(p=>({x:p.vol,y:p.return})),borderColor:'#2d6a4f',backgroundColor:'#2d6a4f',pointRadius:3,showLine:true,fill:false},
+       {label:'Individual Stocks',data:is.map(s=>({x:s.vol,y:s.return})),backgroundColor:'#d4a843',pointRadius:6,borderColor:'#92400e'}],
+      {scales:{x:{title:{display:true,text:'Volatility %'}},y:{title:{display:true,text:'Return %'}}}});
+  } catch(e) { console.error('Optimizer:', e); }
+}
+
+// ── CLUSTERING ────────────────────────────────────────────────────────────────
+async function loadClustering() {
+  document.getElementById('investorClusterTable').innerHTML = '<div class="loading"><span class="spinner"></span> Running AI Segmentation...</div>';
+  
+  try {
+    const [invRes, stkRes] = await Promise.all([
+      fetch(`${API}/clustering/investors`),
+      fetch(`${API}/clustering/stocks`)
+    ]);
+    const inv = await invRes.json();
+    const stk = await stkRes.json();
+
+    // 🚨 1. HANDLE THE INVESTOR CLUSTERING ERROR
+    if (inv.error) {
+      document.getElementById('investorClusterTable').innerHTML = `
+        <div style="background: #fef2f2; border-left: 4px solid var(--rust); padding: 1rem; border-radius: 4px; color: var(--rust);">
+          <strong>⚠️ Not Enough Data:</strong> ${inv.error}. The AI requires more registered users with diverse preferences to form meaningful behavioral clusters.
+        </div>`;
+      document.getElementById('personasBox').innerHTML = '<p style="color:var(--smoke);">Awaiting more data...</p>';
+    } else {
+      // ✅ SUCCESS STATE: Render Personas
+      const personas = inv.personas || {};
+      document.getElementById('personasBox').innerHTML = Object.entries(personas).map(([id,p])=>`
+        <div style="margin-bottom:1rem;padding:1rem;border-radius:8px;border:1px solid var(--border); background:#fff;">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem">
+            <span style="width:12px;height:12px;border-radius:50%;background:${p.color};display:inline-block"></span>
+            <strong style="font-size:1.05rem;">${p.name}</strong>
+            <span style="margin-left:auto;font-size:0.75rem; font-weight:700; background:var(--mist); padding:0.2rem 0.5rem; border-radius:12px; color:var(--moss)">Cluster ${id}</span>
+          </div>
+          <p style="font-size:0.85rem;color:var(--smoke);line-height:1.5;">${p.description}</p>
+        </div>`).join('');
+
+      // Cluster Pie Chart
+      const sizes = inv.cluster_sizes || {};
+      const clusterLabels = Object.keys(sizes).map(k=>(personas[k]||{}).name || `Cluster ${k}`);
+      newChart('clusterPieChart','doughnut',clusterLabels,
+        [{data:Object.values(sizes),backgroundColor:Object.keys(sizes).map(k=>(personas[k]||{}).color||'#9ca3af'),borderWidth:0}],
+        {plugins:{legend:{position:'bottom'}}});
+
+      // Investor Table
+      const assignments = inv.assignments || [];
+      document.getElementById('investorClusterTable').innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>User ID</th><th>Investor Name</th><th>AI Segment</th></tr></thead>
+          <tbody>${assignments.map(a=>`
+            <tr>
+              <td style="color:var(--smoke); font-family:monospace;">#${a.user_id.toString().padStart(4, '0')}</td>
+              <td style="font-weight:600;">${a.username}</td>
+              <td><span class="cluster-chip" style="background:${(personas[a.cluster]||{}).color||'#9ca3af'}">${a.persona}</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    // 📈 2. ALWAYS RENDER STOCK CLUSTERS (Usually has enough data)
+    if (stk.error) {
+       document.getElementById('stockClusterChart').parentElement.innerHTML = `<div class="loading">${stk.error}</div>`;
+    } else {
+      const stocks = stk.stocks || [];
+      const colors = ['#ef4444','#2d6a4f','#3b82f6','#d4a843']; // Mapped to the specific vibes
+      const clusterNames = stk.cluster_names || {};
+      const datasets = [0,1,2,3].map(ci=>({
+        label: clusterNames[ci]||`Group ${ci}`,
+        data : stocks.filter(s=>s.cluster===ci).map(s=>({x:s.volatility,y:s.return_1y, label: s.ticker})),
+        backgroundColor: colors[ci],
+        pointRadius: 6,
+        pointHoverRadius: 9,
+      }));
+      
+      newChart('stockClusterChart','scatter','',datasets, {
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.raw.label}: Vol ${ctx.raw.x.toFixed(1)}%, Ret ${ctx.raw.y.toFixed(1)}%`
+            }
+          }
+        },
+        scales:{
+          x:{title:{display:true,text:'Annualised Volatility (Risk) %'}},
+          y:{title:{display:true,text:'1Y Return (Reward) %'}}
+        }
+      });
+    }
+  } catch(e) { 
+    console.error('Clustering Error:', e); 
+    document.getElementById('investorClusterTable').innerHTML = '<div class="loading">Failed to load AI clustering.</div>';
+  }
+}
+
+// ── RESEARCH ──────────────────────────────────────────────────────────────────
+async function loadResearch() {
+  try {
+    const res  = await fetch(`${API}/esg/correlation`);
+    const data = await res.json();
+    const pts  = data.data_points || [];
+    // ESG vs Return scatter
+    const sectorColors = {'Technology':'#3b82f6','Healthcare':'#22c55e','Clean Energy':'#52b788','Finance':'#f59e0b','Consumer Staples':'#8b5cf6','Utilities':'#06b6d4','Energy':'#ef4444','Industrial':'#f97316'};
+    const bySector = {};
+    pts.forEach(p => { if(!bySector[p.sector])bySector[p.sector]=[]; bySector[p.sector].push(p); });
+    const scatterDatasets = Object.entries(bySector).map(([s,arr])=>({
+      label:s, data:arr.map(p=>({x:p.esg_total,y:p.return_1y})),
+      backgroundColor:(sectorColors[s]||'#9ca3af')+'cc', pointRadius:6,
+    }));
+    newChart('esgReturnScatter','scatter','',scatterDatasets,
+      {scales:{x:{title:{display:true,text:'ESG Score'}},y:{title:{display:true,text:'1Y Return %'}}}});
+    const volDatasets = Object.entries(bySector).map(([s,arr])=>({
+      label:s, data:arr.map(p=>({x:p.esg_total,y:p.volatility})),
+      backgroundColor:(sectorColors[s]||'#9ca3af')+'cc', pointRadius:6,
+    }));
+    newChart('esgVolScatter','scatter','',volDatasets,
+      {scales:{x:{title:{display:true,text:'ESG Score'}},y:{title:{display:true,text:'Volatility %'}}}});
+    // Correlation summary
+    document.getElementById('corrSummary').innerHTML = `
+      <div class="cards-row cards-3" style="margin-top:0.5rem">
+        <div class="card">
+          <div class="card-title">ESG ↔ 1Y Return</div>
+          <div class="card-value ${data.esg_return_corr>0?'pos':'neg'}">${data.esg_return_corr}</div>
+          <div class="card-sub">${data.esg_return_corr>0?'Higher ESG tends to correlate with better returns':'Weak negative correlation'}</div>
+        </div>
+        <div class="card">
+          <div class="card-title">ESG ↔ Volatility</div>
+          <div class="card-value ${data.esg_volatility_corr<0?'pos':'neg'}">${data.esg_volatility_corr}</div>
+          <div class="card-sub">${data.esg_volatility_corr<0?'Higher ESG correlates with lower volatility':'Check sector effects'}</div>
+        </div>
+        <div class="card">
+          <div class="card-title">ESG ↔ Sharpe</div>
+          <div class="card-value ${data.esg_sharpe_corr>0?'pos':'neg'}">${data.esg_sharpe_corr}</div>
+          <div class="card-sub">${data.esg_sharpe_corr>0?'ESG leaders show better risk-adjusted returns':''}</div>
+        </div>
+      </div>`;
+    // Sector heatmap
+    const hmRes = await fetch(`${API}/research/sector_heatmap`);
+    const hm    = await hmRes.json();
+    document.getElementById('sectorHeatmap').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Sector</th><th>ESG Total</th><th>Environmental</th><th>Social</th><th>Governance</th><th>Avg Return</th><th>Avg Sharpe</th></tr></thead>
+        <tbody>${Object.entries(hm).map(([s,d])=>`
+          <tr>
+            <td><strong>${s}</strong></td>
+            <td><div style="display:flex;align-items:center;gap:0.5rem"><div style="width:60px;height:8px;background:#e5e7eb;border-radius:4px"><div style="width:${d.total}%;height:100%;background:var(--moss);border-radius:4px"></div></div>${d.total}</div></td>
+            <td>${d.env}</td><td>${d.soc}</td><td>${d.gov}</td>
+            <td class="${d.avg_return>=0?'pos':'neg'}">${d.avg_return}%</td>
+            <td>${d.avg_sharpe}</td>
+          </tr>`).join('')}
+        </tbody></table>`;
+  } catch(e) { console.error('Research:', e); }
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+const chartInstances = {};
+function newChart(id, type, labels, datasets, extraOptions={}) {
+  if (chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id)?.getContext('2d');
+  if (!ctx) return;
+  chartInstances[id] = new Chart(ctx, {
+    type,
+    data: { labels, datasets },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ font:{ family:'DM Sans',size:11 }, boxWidth:12 } } },
+      ...extraOptions
+    }
+  });
+}
+
+function renderPills(containerId, tickers, arr) {
+  document.getElementById(containerId).innerHTML = arr.map(t=>`
+    <div class="pill">${t}
+      <button onclick="removeTicker('${containerId}','${t}','${arr===portTickers?'port':'opt'}')">✕</button>
+    </div>`).join('');
+}
+
+function removeTicker(containerId, t, type) {
+  if (type === 'port') { portTickers = portTickers.filter(x=>x!==t); renderPills(containerId,portTickers,portTickers); }
+  else { optTickers = optTickers.filter(x=>x!==t); renderPills(containerId,optTickers,optTickers); }
+}
+
+// Load personalized on start
+loadPersonalized();
+
+// ── ML PREDICTIONS ────────────────────────────────────────────────────────────
+// ── ML PREDICTIONS (Fixed with INR & Chart Support) ──────────────────────────
+async function runMLPrediction() {
+  const ticker = document.getElementById('mlTickerSel').value;
+  if (!ticker) return alert('Please select a stock first.');
+  
+  // 1. Show loading state
+  document.getElementById('mlResults').style.display = 'block';
+  const trendEl = document.getElementById('mlTrendSignal');
+  trendEl.innerHTML = '<span class="spinner"></span> Computing...';
+  
+  try {
+    const res = await fetch(`${API}/ml/predict/${ticker}`);
+    const data = await res.json();
+    
+    if (data.error) {
+      trendEl.textContent = "Error";
+      return alert(data.error);
+    }
+
+    // 2. Update Price Cards with INR (Rupee) conversion
+    const currentPriceInr = data.current_price_inr || (data.current_price * 83.5);
+    const predictedPriceInr = data.predicted_price_inr || (data.predicted_price * 83.5);
+
+    document.getElementById('mlCurrentPrice').innerHTML = 
+      `$${data.current_price.toLocaleString()} <br><span style="font-size:1.1rem; color:var(--smoke);">₹${currentPriceInr.toLocaleString('en-IN')}</span>`;
+      
+    document.getElementById('mlPredictedPrice').innerHTML = 
+      `$${data.predicted_price.toLocaleString()} <br><span style="font-size:1.1rem; color:var(--smoke);">₹${predictedPriceInr.toLocaleString('en-IN')}</span>`;
+    
+    // 3. Update Trend Signal
+    trendEl.textContent = data.trend;
+    trendEl.className = data.change_pct > 0 ? 'card-value pos' : 'card-value neg';
+    document.getElementById('mlChangePct').textContent = `Expected Change: ${data.change_pct > 0 ? '+' : ''}${data.change_pct}%`;
+
+    // 4. Render Chart (Historical + Future Prediction)
+    const combinedDates = [...data.historical_dates, ...data.future_dates];
+    const historyData = [...data.historical_prices, ...Array(data.future_dates.length).fill(null)];
+    const futureData = [...Array(data.historical_prices.length - 1).fill(null), 
+                        data.historical_prices[data.historical_prices.length - 1], 
+                        ...data.future_prices];
+
+    newChart('mlForecastChart', 'line', combinedDates, [
+      {
+        label: 'Historical Price (USD)',
+        data: historyData,
+        borderColor: '#0d1117',
+        backgroundColor: '#0d1117',
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHitRadius: 15,
+        borderWidth: 2,
+        tension: 0.1
+      },
+      {
+        label: 'AI Prediction (30 Days)',
+        data: futureData,
+        borderColor: '#d4a843',
+        backgroundColor: '#d4a843',
+        borderDash: [5, 5], 
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHitRadius: 15,
+        borderWidth: 3,
+        tension: 0.1
+      }
+    ], {
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: { ticks: { maxTicksLimit: 15 } },
+        y: { title: { display: true, text: 'Price (USD)' } }
+      }
+    });
+
+  } catch (e) {
+    console.error('ML Prediction Error:', e);
+    trendEl.textContent = "Error";
+    alert('Failed to generate prediction. Check if the backend is running.');
+  }
+}
+// ── SYSTEM UPDATE ─────────────────────────────────────────────────────────────
+async function forceDataRefresh() {
+  const btn = document.getElementById('refreshBtn');
+  btn.textContent = '⏳ Updating System...';
+  btn.disabled = true;
+  
+  try {
+    const res = await fetch(`${API}/admin/force_update`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      alert('Market data updated successfully! The page will now reload to show the latest data.');
+      window.location.reload();
+    }
+  } catch(e) {
+    console.error(e);
+    alert('Failed to update data.');
+  } finally {
+    btn.textContent = '🔄 Refresh Market Data';
+    btn.disabled = false;
+  }
+}
+
+// ── AI CHATBOT ────────────────────────────────────────────────────────────────
+function toggleChat() {
+  const win = document.getElementById('chatWindow');
+  win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
+  if (win.style.display === 'flex') {
+    document.getElementById('chatInput').focus();
+  }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  const body = document.getElementById('chatBody');
+  
+  // 1. Add User Message
+  body.innerHTML += `<div class="msg user">${text}</div>`;
+  input.value = '';
+  body.scrollTop = body.scrollHeight; // Scroll to bottom
+
+  // 2. Add "Typing..." indicator
+  const typingId = 'typing-' + Date.now();
+  body.innerHTML += `<div class="msg bot" id="${typingId}"><span class="spinner" style="width:14px;height:14px;border-width:2px;margin:0;"></span> Thinking...</div>`;
+  body.scrollTop = body.scrollHeight;
+
+  try {
+    // 3. Call Backend
+    const res = await fetch(`${API}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    });
+    const data = await res.json();
+    
+    // 4. Remove typing indicator & show response
+    document.getElementById(typingId).remove();
+    
+    // Convert newlines to <br> for HTML rendering
+    const formattedReply = data.reply.replace(/\n/g, '<br>');
+    body.innerHTML += `<div class="msg bot">${formattedReply}</div>`;
+    
+  } catch (e) {
+    document.getElementById(typingId).remove();
+    body.innerHTML += `<div class="msg bot" style="color:var(--rust)">Connection error. Is the backend running?</div>`;
+  }
+  
+  body.scrollTop = body.scrollHeight;
+}
+
+
+
+
+
+// ── MODEL PORTFOLIO ANALYZER ──────────────────────────────────────────────────
+let modelPortfolio = []; // Array storing {ticker, shares}
+let portfolioPieChartInstance = null;
+
+async function loadPortfolio() {
+  // Populate the dropdown if it is empty
+  const select = document.getElementById('tradeTicker');
+  if (select.options.length <= 1 && allStocks.length > 0) {
+    select.innerHTML = '<option value="">Choose a stock...</option>' + 
+      allStocks.map(s => `<option value="${s.ticker}">${s.ticker} - ${s.name}</option>`).join('');
+  }
+  analyzeModelPortfolio();
+}
+
+function addAssetToModel() {
+  const ticker = document.getElementById('tradeTicker').value;
+  const shares = parseFloat(document.getElementById('tradeShares').value);
+  
+  if (!ticker || isNaN(shares) || shares <= 0) {
+    alert("Please select a valid stock and quantity.");
+    return;
+  }
+  
+  // Check if stock is already in the model, if so, add to the shares
+  const existing = modelPortfolio.find(a => a.ticker === ticker);
+  if (existing) existing.shares += shares;
+  else modelPortfolio.push({ ticker, shares });
+  
+  analyzeModelPortfolio();
+}
+
+function removeAssetFromModel(ticker) {
+  modelPortfolio = modelPortfolio.filter(a => a.ticker !== ticker);
+  analyzeModelPortfolio();
+}
+
+function clearModelPortfolio() {
+  modelPortfolio = [];
+  analyzeModelPortfolio();
+}
+
+async function analyzeModelPortfolio() {
+  if (modelPortfolio.length === 0) {
+    document.getElementById('portValue').textContent = `₹0.00`;
+    document.getElementById('portReturn').textContent = `0.00%`;
+    document.getElementById('portReturn').className = 'card-value';
+    document.getElementById('portEsg').textContent = `0.0`;
+    document.getElementById('portfolioTableContainer').innerHTML = '<div class="loading">Add assets above to build your model portfolio.</div>';
+    if (portfolioPieChartInstance) portfolioPieChartInstance.destroy();
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/portfolio/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ holdings: modelPortfolio })
+    });
+    const data = await res.json();
+    
+    // Update Top Cards
+    document.getElementById('portValue').textContent = `₹${data.total_value_inr.toLocaleString('en-IN')}`;
+    
+    const retEl = document.getElementById('portReturn');
+    retEl.textContent = `${data.expected_return > 0 ? '+' : ''}${data.expected_return}%`;
+    retEl.className = `card-value ${data.expected_return >= 0 ? 'pos' : 'neg'}`;
+    
+    document.getElementById('portEsg').textContent = data.esg_score;
+
+    // Render Table
+    const tableDiv = document.getElementById('portfolioTableContainer');
+    tableDiv.innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Asset</th><th>Shares</th><th>Value (₹)</th><th>Weight</th><th>1Y Return</th><th>ESG</th><th>Action</th></tr></thead>
+        <tbody>${data.assets.map(a => `
+          <tr>
+            <td><strong>${a.ticker}</strong><br><span style="font-size:0.75rem;color:var(--smoke)">${a.sector}</span></td>
+            <td>${a.shares}</td>
+            <td style="font-weight:600;">₹${a.value_inr.toLocaleString('en-IN')}</td>
+            <td>${a.weight}%</td>
+            <td class="${a.return_1y >= 0 ? 'pos' : 'neg'}">${a.return_1y}%</td>
+            <td>${a.esg_total} <span class="badge badge-esg-${a.esg_rating.toLowerCase()}">${a.esg_rating}</span></td>
+            <td><button onclick="removeAssetFromModel('${a.ticker}')" style="background:none; border:none; color:var(--rust); cursor:pointer; font-weight:bold;">✕ Remove</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+
+    // Render Pie Chart
+    const labels = data.assets.map(a => a.ticker);
+    const chartData = data.assets.map(a => a.value_inr);
+    const colors = ['#1e4d38', '#d4a843', '#2c3e50', '#8c7a4b', '#4a6b5d', '#e6c875', '#c0392b', '#8e44ad'];
+
+    const ctx = document.getElementById('portfolioPieChart').getContext('2d');
+    if (portfolioPieChartInstance) portfolioPieChartInstance.destroy();
+    
+    portfolioPieChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels: labels, datasets: [{ data: chartData, backgroundColor: colors, borderWidth: 0 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } }, cutout: '70%' }
+    });
+
+    // 🤖 GENERATE VERDICT TEXT
+    const topAsset = data.assets[0];
+    const assetCount = data.assets.length;
+    let esgComment = data.esg_score >= 70 ? 'strong' : (data.esg_score >= 50 ? 'moderate' : 'weak');
+    
+    let verdictHtml = `You have built a diversified portfolio of <strong>${assetCount} assets</strong>. `;
+    if (topAsset) {
+       verdictHtml += `Your largest holding is <strong>${topAsset.ticker}</strong>, which makes up <strong>${topAsset.weight}%</strong> of your allocation. `;
+    }
+    verdictHtml += `The overall weighted ESG score is <strong>${data.esg_score}/100</strong>, reflecting a ${esgComment} commitment to sustainability. `;
+    verdictHtml += `Based on historical performance, this exact allocation has an estimated annual return of <strong style="color:var(--moss);">${data.expected_return}%</strong>.`;
+    
+    document.getElementById('portVerdictText').innerHTML = verdictHtml;
+    document.getElementById('portfolioVerdictCard').style.display = 'block';
+    
+    // Store expected return globally and calculate the initial math
+    window.currentExpectedReturn = data.expected_return;
+    updateProjections();
+    // --------------------------------
+
+  } catch (e) { console.error('Analyze Error:', e); }
+}
+
+// ── CALCULATE PROJECTIONS (1Y, 3Y, 5Y) ──
+function updateProjections() {
+  const principal = parseFloat(document.getElementById('projInvestment').value) || 0;
+  const r = (window.currentExpectedReturn || 0) / 100;
+  
+  // Compound Interest Math: A = P(1 + r)^t
+  const val1Y = principal * Math.pow(1 + r, 1);
+  const val3Y = principal * Math.pow(1 + r, 3);
+  const val5Y = principal * Math.pow(1 + r, 5);
+  
+  document.getElementById('proj1Y').textContent = `₹${Math.round(val1Y).toLocaleString('en-IN')}`;
+  document.getElementById('proj3Y').textContent = `₹${Math.round(val3Y).toLocaleString('en-IN')}`;
+  document.getElementById('proj5Y').textContent = `₹${Math.round(val5Y).toLocaleString('en-IN')}`;
+}
+
+
+// ── SAVE / LOAD PORTFOLIO (Database Integration) ──
+// ── MULTI-PORTFOLIO SAVE & LOAD ──
+async function saveModelPortfolio() {
+  if (modelPortfolio.length === 0) return alert("Cannot save an empty portfolio!");
+  if (!user || !user.id) return alert("You must be logged in to save.");
+
+  // Ask the user to name their portfolio
+  const portName = prompt("Enter a name for this portfolio:", "My Tech & Green Portfolio");
+  if (!portName) return; // Stop if they hit cancel
+
+  try {
+    const res = await fetch(`${API}/portfolio/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        user_id: user.id, 
+        name: portName, 
+        portfolio: modelPortfolio 
+      })
+    });
+    const data = await res.json();
+    if (data.success) alert("✅ " + data.message);
+    else alert("Error: " + data.message);
+  } catch(e) { alert("Failed to connect to the server."); }
+}
+
+async function loadModelPortfolio() {
+  if (!user || !user.id) return alert("You must be logged in to load.");
+
+  try {
+    const res = await fetch(`${API}/portfolio/load?user_id=${user.id}`);
+    const data = await res.json();
+    
+    if (data.success && data.portfolios && data.portfolios.length > 0) {
+      // If we have portfolios, build the list and show the modal
+      const listDiv = document.getElementById('portfolioList');
+      
+      // Map through the portfolios and create a clickable button for each one
+      listDiv.innerHTML = data.portfolios.map(p => `
+        <div class="port-list-item" onclick='applyLoadedPortfolio(${JSON.stringify(p.data).replace(/'/g, "&#39;")})'>
+          <div>
+            <strong style="color:var(--ink);">${p.name}</strong>
+            <div style="font-size:0.75rem; color:var(--smoke); margin-top:0.2rem;">Saved: ${p.date.split(' ')[0]} • ${p.data.length} Assets</div>
+          </div>
+          <span style="color:var(--moss); font-size:1.2rem;">➔</span>
+        </div>
+      `).join('');
+      
+      document.getElementById('loadPortfolioModal').classList.add('active');
+    } else {
+      alert("No saved portfolios found. Build and save one first!");
+    }
+  } catch(e) { 
+    console.error(e);
+    alert("Failed to fetch portfolios from the server."); 
+  }
+}
+
+function closeLoadModal() {
+  document.getElementById('loadPortfolioModal').classList.remove('active');
+}
+
+function applyLoadedPortfolio(portfolioData) {
+  modelPortfolio = portfolioData; // Replace current model with the loaded one
+  analyzeModelPortfolio();        // Recalculate metrics
+  closeLoadModal();               // Hide the pop-up menu
+}
+
+// ── SAVED PORTFOLIO OPTIMIZER ──
+let mySavedPortfoliosData = []; // Store fetched portfolios globally
+
+// Fetch portfolios specifically for the Optimizer dropdown
+async function loadPortfoliosForOptimizer() {
+  if (!user || !user.id) return;
+  try {
+    const res = await fetch(`${API}/portfolio/load?user_id=${user.id}`);
+    const data = await res.json();
+    
+    const dropdown = document.getElementById('optSavedPortfolioSel');
+    if (data.success && data.portfolios && data.portfolios.length > 0) {
+      mySavedPortfoliosData = data.portfolios; // Save them to memory
+      dropdown.innerHTML = '<option value="">-- Select a Portfolio --</option>' + 
+        data.portfolios.map((p, index) => `<option value="${index}">${p.name} (${p.data.length} Assets)</option>`).join('');
+    } else {
+      dropdown.innerHTML = '<option value="">No portfolios found. Build one first!</option>';
+    }
+  } catch(e) { console.error("Error loading portfolios for optimizer", e); }
+}
+
+// Ensure this runs when they click the Optimizer tab
+const originalShowPage = showPage;
+showPage = function(name) {
+  originalShowPage(name);
+  if (name === 'optimizer') loadPortfoliosForOptimizer();
+};
+
+async function optimizeSavedPortfolio() {
+  const selectedIndex = document.getElementById('optSavedPortfolioSel').value;
+  const goal = document.getElementById('optGoal').value;
+  
+  if (selectedIndex === "") return alert("Please select a saved portfolio to optimize.");
+  
+  const selectedPortfolio = mySavedPortfoliosData[selectedIndex].data;
+  const tickers = selectedPortfolio.map(item => item.ticker); // Extract just the ticker symbols
+
+  // Show loading state
+  document.getElementById('optResults').style.display = 'none';
+  const verdictCard = document.getElementById('optVerdictCard');
+  verdictCard.style.display = 'block';
+  document.getElementById('optVerdictText').innerHTML = '<div class="loading"><span class="spinner"></span> AI is running millions of simulations...</div>';
+  document.getElementById('optComparisonTableContainer').innerHTML = '';
+
+  try {
+    // We now make TWO API calls simultaneously: one for the AI verdict, one for the Frontier chart
+    const [res, frontRes] = await Promise.all([
+      fetch(`${API}/portfolio/optimize_saved`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ holdings: selectedPortfolio, goal: goal })
+      }),
+      fetch(`${API}/portfolio/efficient_frontier`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tickers: tickers })
+      })
+    ]);
+    
+    const data = await res.json();
+    const front = await frontRes.json(); // The data for our chart!
+
+    if (!data.success) return alert("Optimization Error: " + data.message);
+
+    const opt = data.optimal_result;
+
+    // 1. Render Verdict HTML
+    document.getElementById('optVerdictText').innerHTML = data.verdict;
+
+    // 2. Render Comparison Table
+    document.getElementById('optComparisonTableContainer').innerHTML = `
+      <table class="data-table" style="margin-top: 1rem; background: #fff;">
+        <thead><tr><th>Asset</th><th>Current Weight</th><th>Optimal Weight</th><th>AI Action</th></tr></thead>
+        <tbody>${data.comparison.map(c => `
+          <tr>
+            <td><strong>${c.ticker}</strong></td>
+            <td>${c.current_weight.toFixed(1)}%</td>
+            <td style="color:var(--moss); font-weight:bold;">${c.optimal_weight.toFixed(1)}%</td>
+            <td><span class="badge badge-${c.action.toLowerCase() === 'buy' ? 'invest' : c.action.toLowerCase() === 'sell' ? 'hold' : c.action.toLowerCase() === 'remove' ? 'avoid' : 'invest'}" 
+                      style="${c.action === 'HOLD' ? 'background:#e5e7eb; color:#374151;' : ''}">${c.action}</span>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+
+    // 3. Render traditional metrics
+    document.getElementById('optResults').style.display = 'block';
+    document.getElementById('optMetricCards').innerHTML = `
+      <div class="card"><div class="card-title">New Expected Return</div><div class="card-value pos">${opt.expected_return}%</div><div class="card-sub">Was ${data.current_return}%</div></div>
+      <div class="card"><div class="card-title">New Volatility</div><div class="card-value">${opt.expected_vol}%</div></div>
+      <div class="card"><div class="card-title">Sharpe Ratio</div><div class="card-value">${opt.sharpe_ratio}</div><div class="card-sub">Goal: ${opt.goal}</div></div>`;
+      
+    // 4. Render Pie Chart
+    newChart('optPieChart','doughnut',opt.allocation.map(a=>a.ticker),
+      [{data:opt.allocation.map(a=>a.weight),backgroundColor:['#2d6a4f','#52b788','#d4a843','#3b82f6','#8b5cf6','#ef4444','#f97316','#06b6d4'].slice(0,opt.allocation.length),borderWidth:0}],
+      {plugins:{legend:{position:'right'}}});
+
+    // 5. Render Efficient Frontier Chart!
+    if (front.frontier) {
+      const fp = front.frontier;
+      const is = front.individual_stocks || [];
+      newChart('frontierChart','scatter','',
+        [{label:'Efficient Frontier',data:fp.map(p=>({x:p.vol,y:p.return})),borderColor:'#2d6a4f',backgroundColor:'#2d6a4f',pointRadius:3,showLine:true,fill:false},
+         {label:'Individual Stocks',data:is.map(s=>({x:s.vol,y:s.return})),backgroundColor:'#d4a843',pointRadius:6,borderColor:'#92400e'}],
+        {scales:{x:{title:{display:true,text:'Volatility %'}},y:{title:{display:true,text:'Return %'}}}});
+    }
+
+  } catch(e) { 
+    console.error(e);
+    alert("Server error during optimization."); 
+  }
+}
+
+// ── GOAL-BASED INVESTING ─────────────────────────────────────────────────────
+let goalGrowthChartInstance = null;
+
+// Helper to pre-fill the form when a card is clicked
+function setGoalData(name, target, years, defaultSip = 10000) {
+  document.getElementById('goalName').value = name;
+  document.getElementById('goalTarget').value = target;
+  document.getElementById('goalYears').value = years;
+  
+  if (name === '') {
+    document.getElementById('goalInitial').value = '';
+    document.getElementById('goalMonthly').value = '';
+    document.getElementById('goalName').placeholder = "e.g. 🐶 Startup Fund";
+    document.getElementById('goalName').focus();
+  } else {
+    document.getElementById('goalInitial').value = '200000';
+    document.getElementById('goalMonthly').value = defaultSip;
+  }
+
+  const btn = document.querySelector('button[onclick="generateGoalPlan()"]');
+  if (btn) {
+    btn.style.transform = 'scale(1.05)';
+    setTimeout(() => btn.style.transform = 'none', 200);
+  }
+}
+
+async function generateGoalPlan() {
+  const btn = document.querySelector('button[onclick="generateGoalPlan()"]');
+  btn.textContent = '⏳ Calculating...';
+  
+  const payload = {
+    goal_type: document.getElementById('goalName').value,
+    target_amount: parseFloat(document.getElementById('goalTarget').value),
+    years: parseFloat(document.getElementById('goalYears').value),
+    initial_investment: parseFloat(document.getElementById('goalInitial').value) || 0,
+    monthly_contribution: parseFloat(document.getElementById('goalMonthly').value) || 0 
+  };
+
+  try {
+    const res = await fetch(`${API}/goals/plan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    
+    if (!data.success) return alert(data.message);
+
+    document.getElementById('goalResultsArea').style.display = 'block';
+    document.getElementById('goalVerdictText').innerHTML = data.verdict;
+    
+    // 🚀 NEW MAPPINGS
+    document.getElementById('resInitialInvest').textContent = `₹${data.initial_invested.toLocaleString('en-IN')}`;
+    document.getElementById('resExpRet').textContent = `${data.expected_return}%`;
+    document.getElementById('resStrategy').textContent = data.strategy;
+
+    document.getElementById('goalPortfolioTable').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Asset</th><th>Allocation</th><th>Invest Now (₹)</th><th>ESG</th></tr></thead>
+        <tbody>${data.portfolio.map(p => `
+          <tr>
+            <td><strong>${p.ticker}</strong><br><span style="font-size:0.7rem;color:var(--smoke)">${p.sector}</span></td>
+            <td><strong>${p.weight}%</strong></td>
+            <td style="color:var(--moss); font-weight:600;">₹${p.investment_amount.toLocaleString('en-IN')}</td>
+            <td><span class="badge badge-esg-${p.esg_rating.toLowerCase()}">${p.esg_rating}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+
+    // 🚀 RENDER ALLOCATION DOUGHNUT CHART
+    const labels = data.portfolio.map(p => p.ticker);
+    const weights = data.portfolio.map(p => p.weight);
+    const colors = ['#2d6a4f', '#52b788', '#d4a843', '#3b82f6', '#8b5cf6', '#ef4444'];
+    
+    if (goalGrowthChartInstance) goalGrowthChartInstance.destroy();
+    const ctx = document.getElementById('goalAllocationChart').getContext('2d');
+    
+    goalGrowthChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: weights,
+          backgroundColor: colors.slice(0, weights.length),
+          borderWidth: 0
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'right' } },
+        cutout: '65%'
+      }
+    });
+
+  } catch (e) {
+    console.error(e);
+    alert('🚨 CONNECTION ERROR: ' + e.message + '\n\nPlease look at your Python Terminal window.');
+  } finally {
+    btn.textContent = '🪄 Generate AI Strategy';
+  }
+}
+
+// ── FIXED DEPOSITS ────────────────────────────────────────────────────────────
+async function calculateFd() {
+  const btn = document.querySelector('button[onclick="calculateFd()"]');
+  btn.textContent = '⏳ Calculating...';
+
+  const payload = {
+    principal: parseFloat(document.getElementById('fdAmount').value),
+    rate: parseFloat(document.getElementById('fdRate').value),
+    years: parseFloat(document.getElementById('fdYears').value),
+    inflation: parseFloat(document.getElementById('fdInflation').value)
+  };
+
+  try {
+    const res = await fetch(`${API}/investments/fd_analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    document.getElementById('fdResultsArea').style.display = 'block';
+    document.getElementById('fdResultsArea').innerHTML = `
+      <div class="cards-row cards-3" style="margin-top: 1.5rem;">
+        <div class="card"><div class="card-title">Maturity Amount</div><div class="card-value" style="color:var(--moss);">₹${data.maturity.toLocaleString('en-IN')}</div></div>
+        <div class="card"><div class="card-title">Guaranteed Interest</div><div class="card-value pos">+₹${data.interest.toLocaleString('en-IN')}</div></div>
+        <div class="card"><div class="card-title">Real Rate (Post-Inflation)</div><div class="card-value ${data.real_rate > 0 ? 'pos' : 'neg'}">${data.real_rate}%</div></div>
+      </div>
+      <div class="chart-card" style="background: #fdfaf4; border-left: 4px solid var(--moss); margin-top:1.5rem;">
+        <h3 style="display:flex; align-items:center; gap:0.5rem;"><span style="font-size:1.4rem;">🤖</span> AI Asset Analysis</h3>
+        <p style="font-size:1.05rem; line-height:1.6; color:var(--ink);">${data.verdict}</p>
+      </div>
+    `;
+  } catch (e) {
+    alert("Error calculating FD details.");
+  } finally {
+    btn.textContent = '🤖 Analyze ROI';
+  }
+}
+
+// ── GLOBAL MACRO EVENT ANALYZER ───────────────────────────────────────────────
+async function analyzeMacroEvent(eventType) {
+  const resultsArea = document.getElementById('macroResultsArea');
+  resultsArea.style.display = 'block';
+  
+  document.getElementById('macroEventTitle').innerHTML = '<span class="spinner"></span> Analyzing Global Impact...';
+  document.getElementById('macroEventDesc').innerHTML = '';
+  document.getElementById('macroPosSectors').innerHTML = '';
+  document.getElementById('macroNegSectors').innerHTML = '';
+  document.getElementById('macroStocksTable').innerHTML = '<div class="loading">Finding defensive and opportunistic stocks...</div>';
+
+  try {
+    const res = await fetch(`${API}/research/event_impact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_type: eventType })
+    });
+    const data = await res.json();
+    
+    if (!data.success) return alert(data.message);
+
+    const ev = data.event;
+    
+    // Update Header and Colors
+    document.getElementById('macroVerdictBox').style.borderLeftColor = ev.color;
+    document.getElementById('macroEventTitle').innerHTML = ev.name;
+    document.getElementById('macroEventTitle').style.color = ev.color;
+    document.getElementById('macroEventDesc').textContent = ev.desc;
+
+    // Render Sector Tags
+    document.getElementById('macroPosSectors').innerHTML = ev.positive_sectors.map(s => 
+      `<span style="background:#dcfce7; color:#166534; padding:0.3rem 0.8rem; border-radius:6px; font-weight:bold; font-size:0.85rem;">${s}</span>`
+    ).join('');
+    
+    document.getElementById('macroNegSectors').innerHTML = ev.negative_sectors.map(s => 
+      `<span style="background:#fee2e2; color:#991b1b; padding:0.3rem 0.8rem; border-radius:6px; font-weight:bold; font-size:0.85rem;">${s}</span>`
+    ).join('');
+
+    // Render Stock Table
+    if (data.recommendations.length === 0) {
+       document.getElementById('macroStocksTable').innerHTML = '<div class="loading">No highly-ranked ESG stocks found in the benefiting sectors right now.</div>';
+    } else {
+      document.getElementById('macroStocksTable').innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>Asset</th><th>Sector</th><th>1Y Return</th><th>Volatility (Risk)</th><th>ESG Score</th><th>AI Signal</th></tr></thead>
+          <tbody>${data.recommendations.map(r => `
+            <tr>
+              <td><strong>${r.ticker}</strong><br><span style="font-size:0.75rem;color:var(--smoke)">${r.name || ''}</span></td>
+              <td>${r.sector}</td>
+              <td class="${(r.return_1y||0)>=0?'pos':'neg'}">${r.return_1y}%</td>
+              <td>${r.volatility}%</td>
+              <td><span class="badge badge-esg-${(r.esg_rating||'b').toLowerCase()}">${r.esg_rating}</span></td>
+              <td><span class="badge badge-invest">BUY / ACCUMULATE</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+  } catch (e) {
+    console.error(e);
+    document.getElementById('macroEventTitle').innerHTML = '🚨 Error processing event.';
+  }
+}
+
+async function scanLiveNewsForMacro() {
+  try {
+    const res = await fetch(`${API}/research/live_macro_scan`);
+    const data = await res.json();
+    
+    // Hide all badges first
+    document.querySelectorAll('.live-badge').forEach(b => b.style.display = 'none');
+    
+    // Highlight the card that matches today's news!
+    if (data.active_event && data.active_event !== "none") {
+      const badge = document.getElementById('badge_' + data.active_event);
+      if (badge) badge.style.display = 'block';
+      
+      const card = document.getElementById('card_' + data.active_event);
+      if (card) card.style.backgroundColor = '#fef2f2'; // Give it a slight red tint to stand out
+    }
+  } catch (e) {
+    console.error("Failed to scan live news for macro events.");
+  }
+}
+
+// ── ACADEMY COMPOUNDING CALCULATOR ────────────────────────────────────────────
+function calculateAcademyCompounding() {
+  const initial = parseFloat(document.getElementById('acadInitial').value) || 0;
+  const monthly = parseFloat(document.getElementById('acadMonthly').value) || 0;
+  const annualRate = parseFloat(document.getElementById('acadRate').value) || 0;
+  const years = parseFloat(document.getElementById('acadYears').value) || 0;
+
+  const monthlyRate = (annualRate / 100) / 12;
+  const totalMonths = years * 12;
+
+  let finalValue = initial;
+  let totalInvested = initial;
+
+  for (let i = 0; i < totalMonths; i++) {
+    finalValue += monthly;      // Add monthly contribution
+    finalValue *= (1 + monthlyRate); // Apply monthly interest
+    totalInvested += monthly;
+  }
+
+  const wealthGained = finalValue - totalInvested;
+
+  document.getElementById('acadTotalInvested').textContent = `₹${Math.round(totalInvested).toLocaleString('en-IN')}`;
+  document.getElementById('acadTotalGained').textContent = `+₹${Math.round(wealthGained).toLocaleString('en-IN')}`;
+  document.getElementById('acadFinalValue').textContent = `₹${Math.round(finalValue).toLocaleString('en-IN')}`;
+  
+  document.getElementById('acadResults').style.display = 'flex';
+}
+
+</script>
+</body>
+</html>

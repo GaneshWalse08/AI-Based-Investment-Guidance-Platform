@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESGVision — Sustainable Investment Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:    #0d1117;
+  --paper:  #f8f5f0;
+  --moss:   #2d6a4f;
+  --sage:   #52b788;
+  --gold:   #d4a843;
+  --rust:   #c0392b;
+  --mist:   #e8f0eb;
+  --smoke:  #6b7280;
+  --border: #d1c9be;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); min-height:100vh; overflow-x:hidden; }
+
+/* ── NAV ── */
+nav { display:flex; align-items:center; justify-content:space-between; padding:1.2rem 3rem; border-bottom:1px solid var(--border); background:var(--paper); position:sticky; top:0; z-index:100; }
+.nav-logo { font-family:'DM Serif Display',serif; font-size:1.5rem; color:var(--moss); letter-spacing:-0.5px; }
+.nav-logo span { color:var(--gold); }
+.nav-links { display:flex; gap:2rem; list-style:none; }
+.nav-links a { text-decoration:none; color:var(--smoke); font-size:0.9rem; font-weight:500; transition:color .2s; }
+.nav-links a:hover { color:var(--moss); }
+.nav-cta { background:var(--moss); color:#fff; padding:0.5rem 1.4rem; border-radius:6px; text-decoration:none; font-size:0.9rem; font-weight:600; transition:background .2s; }
+.nav-cta:hover { background:#1e4d38; }
+
+/* ── HERO ── */
+.hero { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; padding:5rem 3rem; max-width:1300px; margin:0 auto; }
+.hero-text h1 { font-family:'DM Serif Display',serif; font-size:3.8rem; line-height:1.1; margin-bottom:1.2rem; }
+.hero-text h1 em { color:var(--moss); font-style:normal; }
+.hero-text p { color:var(--smoke); font-size:1.1rem; line-height:1.7; margin-bottom:2rem; max-width:500px; }
+.hero-actions { display:flex; gap:1rem; flex-wrap:wrap; }
+.btn-primary { background:var(--moss); color:#fff; padding:0.85rem 2rem; border-radius:8px; text-decoration:none; font-weight:600; font-size:1rem; border:none; cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:0.5rem; }
+.btn-primary:hover { background:#1e4d38; transform:translateY(-1px); }
+.btn-secondary { background:transparent; color:var(--moss); padding:0.85rem 2rem; border-radius:8px; text-decoration:none; font-weight:600; font-size:1rem; border:2px solid var(--moss); cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:0.5rem; }
+.btn-secondary:hover { background:var(--mist); }
+.hero-visual { position:relative; }
+.hero-card { background:#fff; border-radius:16px; padding:1.5rem; box-shadow:0 4px 24px rgba(0,0,0,0.08); border:1px solid var(--border); }
+.ticker-row { display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid var(--mist); }
+.ticker-row:last-child { border:none; }
+.ticker-name { font-weight:600; font-size:0.95rem; }
+.ticker-sector { font-size:0.75rem; color:var(--smoke); }
+.esg-badge { background:var(--mist); color:var(--moss); padding:0.2rem 0.6rem; border-radius:20px; font-size:0.75rem; font-weight:600; }
+.ticker-return.pos { color:#16a34a; font-weight:700; }
+.ticker-return.neg { color:var(--rust); font-weight:700; }
+.card-header { font-family:'DM Serif Display',serif; font-size:1.1rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; }
+.dot { width:8px; height:8px; border-radius:50%; background:var(--sage); }
+
+/* ── STATS BAR ── */
+.stats-bar { background:var(--moss); color:#fff; padding:1.2rem 3rem; display:flex; gap:4rem; justify-content:center; flex-wrap:wrap; }
+.stat { text-align:center; }
+.stat-value { font-family:'DM Serif Display',serif; font-size:2rem; }
+.stat-label { font-size:0.8rem; opacity:0.75; }
+
+/* ── FEATURES ── */
+.features { padding:5rem 3rem; max-width:1300px; margin:0 auto; }
+.section-title { font-family:'DM Serif Display',serif; font-size:2.4rem; text-align:center; margin-bottom:0.75rem; }
+.section-sub { text-align:center; color:var(--smoke); margin-bottom:3rem; font-size:1rem; }
+.features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
+.feature-card { background:#fff; border:1px solid var(--border); border-radius:12px; padding:1.8rem; transition:box-shadow .2s; }
+.feature-card:hover { box-shadow:0 6px 24px rgba(0,0,0,0.08); }
+.feature-icon { font-size:2rem; margin-bottom:1rem; }
+.feature-card h3 { font-family:'DM Serif Display',serif; font-size:1.2rem; margin-bottom:0.6rem; }
+.feature-card p { color:var(--smoke); font-size:0.9rem; line-height:1.6; }
+
+/* ── AUTH MODAL ── */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
+.modal-overlay.active { display:flex; }
+.modal { background:#fff; border-radius:16px; padding:2.5rem; width:100%; max-width:440px; box-shadow:0 20px 60px rgba(0,0,0,0.15); }
+.modal h2 { font-family:'DM Serif Display',serif; font-size:1.8rem; margin-bottom:0.3rem; }
+.modal p.subtitle { color:var(--smoke); font-size:0.9rem; margin-bottom:1.8rem; }
+.form-group { margin-bottom:1.2rem; }
+.form-group label { display:block; font-size:0.85rem; font-weight:600; margin-bottom:0.4rem; color:var(--ink); }
+.form-group input, .form-group select { width:100%; padding:0.75rem 1rem; border:1.5px solid var(--border); border-radius:8px; font-size:0.95rem; font-family:inherit; background:var(--paper); transition:border-color .2s; }
+.form-group input:focus, .form-group select:focus { outline:none; border-color:var(--moss); background:#fff; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.btn-full { width:100%; background:var(--moss); color:#fff; padding:0.85rem; border-radius:8px; border:none; font-size:1rem; font-weight:600; cursor:pointer; margin-top:0.5rem; font-family:inherit; transition:background .2s; }
+.btn-full:hover { background:#1e4d38; }
+.modal-switch { text-align:center; margin-top:1.2rem; font-size:0.9rem; color:var(--smoke); }
+.modal-switch a { color:var(--moss); font-weight:600; cursor:pointer; text-decoration:none; }
+.modal-close { position:absolute; top:1rem; right:1.2rem; background:none; border:none; font-size:1.4rem; cursor:pointer; color:var(--smoke); }
+.modal { position:relative; }
+.alert { padding:0.75rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem; }
+.alert.error { background:#fef2f2; color:#991b1b; border:1px solid #fca5a5; }
+.alert.success { background:#f0fdf4; color:#166534; border:1px solid #86efac; }
+.demo-hint { background:var(--mist); border-radius:8px; padding:0.75rem 1rem; font-size:0.82rem; color:var(--moss); margin-bottom:1.2rem; }
+.demo-hint strong { display:block; margin-bottom:0.2rem; }
+
+/* ── FOOTER ── */
+footer { background:var(--ink); color:#9ca3af; padding:2rem 3rem; text-align:center; font-size:0.85rem; margin-top:4rem; }
+footer span { color:var(--sage); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">ESG<span>Vision</span></div>
+  <ul class="nav-links">
+    <li><a href="#">Features</a></li>
+    <li><a href="#">Research</a></li>
+    <li><a href="#">Methodology</a></li>
+  </ul>
+  <a href="#" class="nav-cta" onclick="openModal('login')">Sign In</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-text">
+    <h1>Invest with <em>Intelligence</em> &amp; Conscience</h1>
+    <p>An AI-powered decision support platform that unites financial performance analytics with ESG sustainability scoring, behavioral clustering, and portfolio optimization.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="openModal('register')">🌱 Start Investing Sustainably</button>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-card">
+      <div class="card-header"><span class="dot"></span> Live ESG Rankings</div>
+      <div class="ticker-row">
+        <div><div class="ticker-name">Microsoft</div><div class="ticker-sector">Technology</div></div>
+        <span class="esg-badge">AAA 91</span>
+        <span class="ticker-return pos">+34.2%</span>
+      </div>
+      <div class="ticker-row">
+        <div><div class="ticker-name">NextEra Energy</div><div class="ticker-sector">Clean Energy</div></div>
+        <span class="esg-badge">AAA 95</span>
+        <span class="ticker-return pos">+18.7%</span>
+      </div>
+      <div class="ticker-row">
+        <div><div class="ticker-name">First Solar</div><div class="ticker-sector">Clean Energy</div></div>
+        <span class="esg-badge">AAA 94</span>
+        <span class="ticker-return pos">+22.1%</span>
+      </div>
+      <div class="ticker-row">
+        <div><div class="ticker-name">Apple Inc.</div><div class="ticker-sector">Technology</div></div>
+        <span class="esg-badge">AA 82</span>
+        <span class="ticker-return pos">+14.5%</span>
+      </div>
+      <div class="ticker-row">
+        <div><div class="ticker-name">ExxonMobil</div><div class="ticker-sector">Energy</div></div>
+        <span class="esg-badge" style="background:#fee2e2;color:#991b1b">B 35</span>
+        <span class="ticker-return neg">−3.1%</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value">26</div><div class="stat-label">Stocks Tracked</div></div>
+  <div class="stat"><div class="stat-value">8</div><div class="stat-label">Sectors Covered</div></div>
+  <div class="stat"><div class="stat-value">5</div><div class="stat-label">AI Modules</div></div>
+  <div class="stat"><div class="stat-value">100%</div><div class="stat-label">Explainable AI</div></div>
+</div>
+
+<section class="features">
+  <h2 class="section-title">Every Dimension of Investment Intelligence</h2>
+  <p class="section-sub">Modular, explainable, and research-grade analytics in one unified platform.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🌿</div>
+      <h3>ESG Scoring Engine</h3>
+      <p>Environmental, Social, and Governance scores integrated into every ranking. Compare sectors, track sustainability ratings from B to AAA.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Financial Analytics</h3>
+      <p>Sharpe ratio, annualised volatility, 1-year returns, max drawdown, and beta — computed fresh every day from market data.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🎯</div>
+      <h3>Personalized Rankings</h3>
+      <p>Set your risk tolerance, budget, sector preferences, and investment horizon. Receive filtered, customized recommendations instantly.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📰</div>
+      <h3>News Sentiment Intelligence</h3>
+      <p>Daily market headlines analyzed for sentiment. Track bullish/bearish signals across sectors with a Fear & Greed index.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚗️</div>
+      <h3>Portfolio Optimizer</h3>
+      <p>Mean-Variance Optimization (Markowitz) to compute ideal asset weights. Choose Sharpe maximization, min-volatility, or max-return goals.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔮</div>
+      <h3>Investor Clustering</h3>
+      <p>KMeans behavioral clustering segments investors into Sustainable Guardian, Balanced Seeker, or Aggressive Hunter personas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="alertBox"></div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <h2>Welcome back</h2>
+      <p class="subtitle">Sign in to your ESGVision account</p>
+      
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="loginUser" placeholder="demo_investor">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="••••••••">
+      </div>
+      <button class="btn-full" onclick="doLogin()">Sign In</button>
+      <div class="modal-switch">Don't have an account? <a onclick="switchForm('register')">Register</a></div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="registerForm" style="display:none">
+      <h2>Create account</h2>
+      <p class="subtitle">Start your sustainable investing journey</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="regUser" placeholder="john_doe">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="john@email.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="regPass" placeholder="••••••••">
+      </div>
+      
+      <button class="btn-full" onclick="doRegister()">Create Account</button>
+      <div class="modal-switch">Already have an account? <a onclick="switchForm('login')">Sign In</a></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>ESGVision &copy; 2024 — Academic Research Platform &nbsp;|&nbsp; Built with <span>♥</span> for sustainable investing &nbsp;|&nbsp; Not financial advice.</p>
+</footer>
+
+<script>
+const API = 'http://localhost:5000/api';
+
+function openModal(form) {
+  document.getElementById('authModal').classList.add('active');
+  switchForm(form);
+}
+function closeModal() {
+  document.getElementById('authModal').classList.remove('active');
+}
+function switchForm(form) {
+  document.getElementById('loginForm').style.display    = form === 'login'    ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = form === 'register' ? 'block' : 'none';
+  document.getElementById('alertBox').innerHTML = '';
+}
+function showAlert(msg, type) {
+  document.getElementById('alertBox').innerHTML =
+    `<div class="alert ${type}">${msg}</div>`;
+}
+async function doLogin() {
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value;
+  if (!username || !password) return showAlert('Please fill in all fields.', 'error');
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username, password})
+    });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('esg_user', JSON.stringify(data.user));
+      showAlert('Login successful! Redirecting…', 'success');
+      setTimeout(() => window.location.href = 'dashboard.html', 800);
+    } else {
+      showAlert(data.message || 'Login failed.', 'error');
+    }
+  } catch(e) { showAlert('Server not reachable. Run: python backend/app.py', 'error'); }
+}
+async function doRegister() {
+  const username = document.getElementById('regUser').value.trim();
+  const email    = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPass').value;
+  
+  // We send an empty object. The backend will automatically apply the default 
+  // preferences (Moderate Risk, Medium ESG, 1-3 years duration).
+  const preferences = {};
+
+  if (!username || !email || !password) return showAlert('Please fill in all fields.', 'error');
+  
+  try {
+    const res = await fetch(`${API}/auth/register`, {
+      method:'POST', 
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username, email, password, preferences})
+    });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('esg_user', JSON.stringify(data.user));
+      showAlert('Account created! Redirecting…', 'success');
+      setTimeout(() => window.location.href = 'dashboard.html', 800);
+    } else {
+      showAlert(data.message || 'Registration failed.', 'error');
+    }
+  } catch(e) { 
+    showAlert('Server not reachable. Run: python backend/app.py', 'error'); 
+  }
+}
+
+function quickDemo() {
+  document.getElementById('loginUser').value = 'demo_investor';
+  document.getElementById('loginPass').value = 'demo1234';
+  openModal('login');
+}
+document.getElementById('authModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
