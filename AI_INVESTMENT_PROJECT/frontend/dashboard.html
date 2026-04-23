@@ -194,6 +194,112 @@ nav.sidebar-nav { padding:1rem 0; flex:1; }
 .highlight-text h4 { color: var(--moss); margin-bottom: 0.3rem; font-size: 1.1rem; }
 .highlight-text p { color: #1a3d2b; font-size: 0.95rem; line-height: 1.5; margin: 0; }
 
+/* Update your existing .sidebar-user and add a hover state */
+.sidebar-user { 
+  padding: 1rem 1.5rem; 
+  border-bottom: 1px solid var(--mist); 
+  cursor: pointer; /* Makes the mouse a clickable hand */
+  transition: background 0.2s; /* Smooth background change */
+}
+.sidebar-user:hover {
+  background: var(--mist); /* Subtle highlight when hovered */
+}
+
+/* ── PROFILE STYLES ── */
+.profile-header-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem; }
+.profile-cover { height: 160px; background: linear-gradient(135deg, var(--moss) 0%, var(--sage) 100%); position: relative; }
+.profile-cover-btn { position: absolute; bottom: 1rem; right: 1.5rem; background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; backdrop-filter: blur(4px); transition: background 0.2s; }
+.profile-cover-btn:hover { background: rgba(255,255,255,0.3); }
+
+.profile-info-bar { padding: 0 1.5rem 1.5rem; display: flex; align-items: flex-end; gap: 1.5rem; margin-top: -40px; position: relative; }
+.profile-avatar-wrapper { position: relative; }
+.profile-avatar { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #fff; background: var(--paper); object-fit: cover; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--moss); font-weight: bold; overflow: hidden; }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; display: none; }
+.avatar-upload-btn { position: absolute; bottom: 0; right: 0; background: var(--moss); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: transform 0.2s; }
+.avatar-upload-btn:hover { transform: scale(1.1); }
+
+.profile-titles h2 { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: var(--ink); margin-bottom: 0.2rem; }
+.profile-titles p { color: var(--smoke); font-size: 0.9rem; }
+.profile-badges { margin-left: auto; display: flex; gap: 0.8rem; margin-bottom: 0.5rem; }
+
+.profile-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+.profile-section { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+.profile-section-title { font-size: 1.1rem; font-weight: 600; color: var(--ink); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid var(--mist); padding-bottom: 0.8rem; }
+
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.2rem; }
+.stat-row { display: flex; justify-content: space-between; padding: 0.8rem 0; border-bottom: 1px dashed var(--mist); font-size: 0.9rem; }
+.stat-row:last-child { border-bottom: none; }
+.stat-row span:last-child { font-weight: 600; color: var(--ink); }
+
+@media(max-width: 900px) {
+  .profile-grid { grid-template-columns: 1fr; }
+  .form-grid-2 { grid-template-columns: 1fr; }
+  .profile-info-bar { flex-direction: column; align-items: center; text-align: center; margin-top: -50px; }
+  .profile-badges { margin: 1rem auto 0; }
+}
+
+/* ── UPGRADED SIDEBAR USER ── */
+.sidebar-user { 
+  padding: 1.2rem 1.5rem; 
+  border-bottom: 1px solid var(--mist); 
+  cursor: pointer; 
+  transition: all 0.2s ease; 
+  display: flex; 
+  align-items: center; 
+  gap: 0.8rem; 
+}
+.sidebar-user:hover { 
+  background: var(--paper); 
+  box-shadow: inset 4px 0 0 var(--moss); 
+}
+.sidebar-user-text { 
+  flex: 1; 
+  overflow: hidden; 
+}
+.user-avatar { 
+  width: 44px; 
+  height: 44px; 
+  background: linear-gradient(135deg, var(--moss), var(--sage)); 
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  color: #fff; 
+  font-weight: 700; 
+  font-size: 1.1rem; 
+  flex-shrink: 0; 
+  box-shadow: 0 4px 10px rgba(45,106,79,0.2); 
+}
+.user-name { 
+  font-size: 0.95rem; 
+  font-weight: 700; 
+  white-space: nowrap; 
+  text-overflow: ellipsis; 
+  overflow: hidden; 
+  display: block; 
+  color: var(--ink); 
+}
+.user-cluster { 
+  font-size: 0.7rem; 
+  color: var(--moss); 
+  background: var(--mist); 
+  display: inline-block; 
+  padding: 0.15rem 0.5rem; 
+  border-radius: 12px; 
+  margin-top: 0.2rem; 
+  font-weight: 700; 
+  border: 1px solid #d1e3da; 
+  letter-spacing: 0.2px; 
+}
+.user-chevron { 
+  color: var(--smoke); 
+  font-size: 1rem; 
+  transition: color 0.2s; 
+}
+.sidebar-user:hover .user-chevron { 
+  color: var(--moss); 
+}
+
 </style>
 </head>
 <body>
@@ -201,10 +307,13 @@ nav.sidebar-nav { padding:1rem 0; flex:1; }
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-logo">ESG<span>Vision</span></div>
-  <div class="sidebar-user">
-    <span class="user-avatar" id="avatarInitial">?</span>
-    <span class="user-name" id="sidebarUsername">Loading…</span>
-    <div class="user-cluster" id="sidebarCluster">—</div>
+  <div class="sidebar-user" onclick="showPage('profile')" title="Open Account Settings">
+    <div class="user-avatar" id="avatarInitial">?</div>
+    <div class="sidebar-user-text">
+      <span class="user-name" id="sidebarUsername">Loading…</span>
+      <span class="user-cluster" id="sidebarCluster">—</span>
+    </div>
+    <div class="user-chevron">⚙️</div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">Learning</div>
@@ -1036,6 +1145,148 @@ nav.sidebar-nav { padding:1rem 0; flex:1; }
           </div>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-profile">
+    <div class="page-header">
+      <h1>Account Settings</h1>
+      <p>Manage your personal information, security, and AI investor preferences.</p>
+    </div>
+
+    <div class="profile-header-card">
+      <div class="profile-cover" id="profileCover">
+        <button class="profile-cover-btn" onclick="document.getElementById('coverInput').click()">📷 Change Cover</button>
+        <input type="file" id="coverInput" style="display:none" accept="image/*" onchange="previewCover(event)">
+      </div>
+      <div class="profile-info-bar">
+        <div class="profile-avatar-wrapper">
+          <div class="profile-avatar" id="avatarPreviewBox">
+            <span id="avatarInitials">U</span>
+            <img id="avatarImage" src="" alt="Profile Photo">
+          </div>
+          <label class="avatar-upload-btn" for="avatarInput" title="Upload Photo">✏️</label>
+          <input type="file" id="avatarInput" style="display:none" accept="image/*" onchange="previewAvatar(event)">
+        </div>
+        
+        <div class="profile-titles">
+          <h2 id="profDisplayUsername">Loading...</h2>
+          <p id="profDisplayEmail">user@email.com</p>
+        </div>
+
+        <div class="profile-badges">
+          <span class="badge badge-esg-aaa" id="profDisplayTier" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">Basic Member</span>
+          <span class="badge badge-invest" id="profDisplayCluster" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">Evaluating AI Persona...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-grid">
+      <div>
+        <div class="profile-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--mist); padding-bottom: 0.8rem; margin-bottom: 1.2rem;">
+            <h3 class="profile-section-title" style="margin-bottom: 0; border: none; padding: 0;"><span>📝</span> Personal Details</h3>
+            <button id="editProfileBtn" class="ctrl-btn outline" style="padding: 0.3rem 0.8rem; font-size: 0.8rem; display: none;" onclick="toggleEditProfile()">✏️ Edit Info</button>
+          </div>
+
+          <div id="profileDisplayMode" style="display: none;">
+            <div class="form-grid-2">
+              <div style="background: var(--paper); padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                <span style="font-size:0.75rem; color:var(--smoke); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Full Name</span><br>
+                <strong id="dispFullName" style="font-size: 1.05rem; display: block; margin-top: 0.2rem;">—</strong>
+              </div>
+              <div style="background: var(--paper); padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                <span style="font-size:0.75rem; color:var(--smoke); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Phone Number</span><br>
+                <strong id="dispPhone" style="font-size: 1.05rem; display: block; margin-top: 0.2rem;">—</strong>
+              </div>
+              <div style="background: var(--paper); padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                <span style="font-size:0.75rem; color:var(--smoke); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Location</span><br>
+                <strong id="dispLocation" style="font-size: 1.05rem; display: block; margin-top: 0.2rem;">—</strong>
+              </div>
+              <div style="background: var(--paper); padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                <span style="font-size:0.75rem; color:var(--smoke); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Occupation</span><br>
+                <strong id="dispOccupation" style="font-size: 1.05rem; display: block; margin-top: 0.2rem;">—</strong>
+              </div>
+            </div>
+          </div>
+
+          <div id="profileEditMode">
+            <div class="form-grid-2">
+              <div>
+                <label style="font-size:0.85rem; font-weight:600; color:var(--smoke); display:block; margin-bottom:0.4rem;">Full Name</label>
+                <input type="text" class="ctrl-input" id="profFullName" placeholder="e.g. John Doe" style="width:100%;">
+              </div>
+              <div>
+                <label style="font-size:0.85rem; font-weight:600; color:var(--smoke); display:block; margin-bottom:0.4rem;">Phone Number</label>
+                <input type="tel" class="ctrl-input" id="profPhone" placeholder="+91 00000 00000" style="width:100%;">
+              </div>
+              <div>
+                <label style="font-size:0.85rem; font-weight:600; color:var(--smoke); display:block; margin-bottom:0.4rem;">Location</label>
+                <input type="text" class="ctrl-input" id="profLocation" placeholder="e.g. Pune, India" style="width:100%;">
+              </div>
+              <div>
+                <label style="font-size:0.85rem; font-weight:600; color:var(--smoke); display:block; margin-bottom:0.4rem;">Occupation</label>
+                <input type="text" class="ctrl-input" id="profOccupation" placeholder="e.g. Software Engineer" style="width:100%;">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <h3 class="profile-section-title"><span>🤖</span> AI Guidance Preferences</h3>
+          <p style="font-size:0.85rem; color:var(--smoke); margin-bottom:1rem;">These settings dictate how the ESGVision algorithms build and recommend portfolios for you.</p>
+          
+          <div class="form-grid-2">
+            <div>
+              <label style="font-size:0.85rem; font-weight:600; color:var(--smoke); display:block; margin-bottom:0.4rem;">Default Risk Tolerance</label>
+              <select class="ctrl-select" id="profRisk" style="width:100%;">
+                <option value="low">Low (Capital Preservation)</option>
+                <option value="moderate">Moderate (Balanced Growth)</option>
+                <option value="high">High (Aggressive Returns)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:0.85rem; font-weight:600; color:var(--smoke); display:block; margin-bottom:0.4rem;">Default ESG Strictness</label>
+              <select class="ctrl-select" id="profEsg" style="width:100%;">
+                <option value="low">Low (Financials First)</option>
+                <option value="medium">Medium (Balanced)</option>
+                <option value="high">High (Strict Sustainability)</option>
+              </select>
+            </div>
+          </div>
+          <button class="ctrl-btn" onclick="saveProfileSettings()" style="margin-top: 0.5rem; padding: 0.7rem 2rem;">💾 Save Preferences</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="profile-section">
+          <h3 class="profile-section-title"><span>📊</span> Platform Activity</h3>
+          <div class="stat-row">
+            <span style="color:var(--smoke);">Account Created</span>
+            <span id="profStatCreated">Today</span>
+          </div>
+          <div class="stat-row">
+            <span style="color:var(--smoke);">Saved Portfolios</span>
+            <span id="profStatPortfolios">0</span>
+          </div>
+          <div class="stat-row">
+            <span style="color:var(--smoke);">AI Optimizations Run</span>
+            <span id="profStatAI">0</span>
+          </div>
+          <div class="stat-row">
+            <span style="color:var(--smoke);">Favorite Sector</span>
+            <span id="profStatSector" style="color:var(--moss);">Not Set</span>
+          </div>
+        </div>
+
+        <div class="profile-section" style="border-color: #fca5a5; background: #fef2f2;">
+          <h3 class="profile-section-title" style="color: #991b1b; border-bottom-color: #fecaca;"><span>🔒</span> Security</h3>
+          
+          <button id="btnChangePassword" class="ctrl-btn outline" style="width:100%; margin-bottom: 0.8rem; border-color: #ef4444; color: #ef4444;" onclick="triggerPasswordReset()">Change Password</button>
+          
+          <button id="btnEnable2FA" class="ctrl-btn outline" style="width:100%; border-color: var(--smoke); color: var(--smoke);" onclick="trigger2FA()">Enable 2FA Auth</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2307,6 +2558,203 @@ function calculateAcademyCompounding() {
   document.getElementById('acadFinalValue').textContent = `₹${Math.round(finalValue).toLocaleString('en-IN')}`;
   
   document.getElementById('acadResults').style.display = 'flex';
+}
+
+// ── PROFILE LOGIC ─────────────────────────────────────────────────────────────
+
+// Make sure the profile page loads the data when it is clicked
+const originalShowPageProfile = showPage;
+showPage = function(name) {
+  originalShowPageProfile(name);
+  if (name === 'profile') loadProfilePageData();
+};
+
+// Make sure you replace the whole function, and notice it now says "async function"
+async function loadProfilePageData() {
+  if (!user) return;
+  
+  // Set Header Info
+  document.getElementById('profDisplayUsername').textContent = user.username;
+  document.getElementById('profDisplayEmail').textContent = user.email || `${user.username}@esgvision.com`;
+  document.getElementById('avatarInitials').textContent = user.username[0].toUpperCase();
+  
+  // 🚀 FIX 1: Set a professional default for the AI Persona badge
+  document.getElementById('profDisplayTier').textContent = user.subscription_tier || "Pro Member";
+  document.getElementById('profDisplayCluster').textContent = user.persona || "Balanced Seeker";
+  
+  // Load AI Preferences
+  if (user.preferences) {
+    document.getElementById('profRisk').value = user.preferences.risk_tolerance || 'moderate';
+    document.getElementById('profEsg').value = user.preferences.esg_priority || 'medium';
+  }
+
+  // Load Personal Info (View/Edit Logic)
+  if (user.personal_info && user.personal_info.fullName) {
+    document.getElementById('dispFullName').textContent = user.personal_info.fullName || '—';
+    document.getElementById('dispPhone').textContent = user.personal_info.phone || '—';
+    document.getElementById('dispLocation').textContent = user.personal_info.location || '—';
+    document.getElementById('dispOccupation').textContent = user.personal_info.occupation || '—';
+    
+    document.getElementById('profFullName').value = user.personal_info.fullName || '';
+    document.getElementById('profPhone').value = user.personal_info.phone || '';
+    document.getElementById('profLocation').value = user.personal_info.location || '';
+    document.getElementById('profOccupation').value = user.personal_info.occupation || '';
+
+    document.getElementById('profileEditMode').style.display = 'none';
+    document.getElementById('profileDisplayMode').style.display = 'block';
+    document.getElementById('editProfileBtn').style.display = 'block';
+  } else {
+    document.getElementById('profileEditMode').style.display = 'block';
+    document.getElementById('profileDisplayMode').style.display = 'none';
+    document.getElementById('editProfileBtn').style.display = 'none';
+  }
+  
+  // 🚀 FIX 2: Actively fetch the REAL portfolio count from your backend database
+  try {
+    document.getElementById('profStatPortfolios').textContent = "..."; // Loading state
+    const res = await fetch(`${API}/portfolio/load?user_id=${user.id}`);
+    const data = await res.json();
+    if (data.success && data.portfolios) {
+      document.getElementById('profStatPortfolios').textContent = data.portfolios.length;
+    } else {
+      document.getElementById('profStatPortfolios').textContent = "0";
+    }
+  } catch(e) {
+    document.getElementById('profStatPortfolios').textContent = "0";
+  }
+  
+  // Update Platform Activity Stats
+  if (!user.joinDate) {
+    user.joinDate = new Date().toLocaleDateString(); // Set to today if not found
+    localStorage.setItem('esg_user', JSON.stringify(user));
+  }
+  document.getElementById('profStatCreated').textContent = user.joinDate;
+  document.getElementById('profStatAI').textContent = user.ai_runs || "0";
+  document.getElementById('profStatSector').textContent = user.preferences?.favorite_sector || "Diversified";
+  
+  // Load saved profile images from LocalStorage
+  const savedAvatar = localStorage.getItem('esg_avatar_' + user.id);
+  if (savedAvatar) {
+    document.getElementById('avatarImage').src = savedAvatar;
+    document.getElementById('avatarImage').style.display = 'block';
+    document.getElementById('avatarInitials').style.display = 'none';
+  }
+
+  const savedCover = localStorage.getItem('esg_cover_' + user.id);
+  if (savedCover) {
+    document.getElementById('profileCover').style.backgroundImage = `url(${savedCover})`;
+  }
+}
+
+// Function to switch back to Edit Mode
+function toggleEditProfile() {
+  document.getElementById('profileDisplayMode').style.display = 'none';
+  document.getElementById('profileEditMode').style.display = 'block';
+  document.getElementById('editProfileBtn').style.display = 'none';
+}
+
+// Handle Avatar Upload & Preview
+function previewAvatar(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('avatarImage').src = e.target.result;
+      document.getElementById('avatarImage').style.display = 'block';
+      document.getElementById('avatarInitials').style.display = 'none';
+      
+      // Save to localStorage so it persists across refreshes
+      if (user && user.id) localStorage.setItem('esg_avatar_' + user.id, e.target.result);
+    }
+    reader.readAsDataURL(file);
+  }
+}
+
+// Handle Cover Upload & Preview
+function previewCover(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('profileCover').style.backgroundImage = `url(${e.target.result})`;
+      
+      // Save to localStorage so it persists across refreshes
+      if (user && user.id) localStorage.setItem('esg_cover_' + user.id, e.target.result);
+    }
+    reader.readAsDataURL(file);
+  }
+}
+
+// Updated Save Profile Logic
+async function saveProfileSettings() {
+  const btn = document.querySelector('button[onclick="saveProfileSettings()"]');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '⏳ Saving...';
+  
+  setTimeout(() => {
+    // Save AI Preferences
+    if (!user.preferences) user.preferences = {};
+    user.preferences.risk_tolerance = document.getElementById('profRisk').value;
+    user.preferences.esg_priority = document.getElementById('profEsg').value;
+
+    // Save Personal Info
+    if (!user.personal_info) user.personal_info = {};
+    user.personal_info.fullName = document.getElementById('profFullName').value;
+    user.personal_info.phone = document.getElementById('profPhone').value;
+    user.personal_info.location = document.getElementById('profLocation').value;
+    user.personal_info.occupation = document.getElementById('profOccupation').value;
+    
+    // Save to local storage
+    localStorage.setItem('esg_user', JSON.stringify(user));
+    
+    // Reload the page data to trigger the View mode
+    loadProfilePageData();
+    
+    btn.innerHTML = '✅ Saved Successfully';
+    setTimeout(() => btn.innerHTML = originalText, 2000);
+  }, 800);
+}
+
+// ── SECURITY SETTINGS LOGIC ───────────────────────────────────────────────────
+
+function triggerPasswordReset() {
+  const btn = document.getElementById('btnChangePassword');
+  const originalText = btn.innerHTML;
+  
+  // Show loading state
+  btn.innerHTML = '⏳ Sending Reset Link...';
+  btn.style.pointerEvents = 'none'; // Prevent double clicking
+
+  // Simulate network request delay
+  setTimeout(() => {
+    btn.innerHTML = '✅ Reset Link Sent to Email';
+    
+    // Reset the button back to normal after 3 seconds
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+      btn.style.pointerEvents = 'auto';
+    }, 3000);
+  }, 1200);
+}
+
+function trigger2FA() {
+  const btn = document.getElementById('btnEnable2FA');
+  
+  // Show loading state
+  btn.innerHTML = '⏳ Generating QR Code...';
+  btn.style.pointerEvents = 'none';
+
+  // Simulate network request delay
+  setTimeout(() => {
+    alert("In a production environment, this would display a secure QR code for you to scan with Google Authenticator or Authy.\n\nFor this demo, 2FA has been mocked as successfully enabled!");
+    
+    // Change button to show it is permanently ON
+    btn.innerHTML = '✅ 2FA is Active';
+    btn.style.borderColor = 'var(--moss)';
+    btn.style.color = 'var(--moss)';
+    btn.style.backgroundColor = 'var(--mist)';
+    // We leave pointerEvents as 'none' so they can't click it again
+  }, 1200);
 }
 
 </script>
